@@ -13,8 +13,8 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/send-data', [ApiController::class, 'handleHttpData']);
 
-Route::get('/telkominfra', [ViewTelkominfraController::class, 'index'])->name('api.telkominfra.index');
-Route::get('/telkominfra/{id}', [ViewTelkominfraController::class, 'show'])->name('api.telkominfra.show');
+Route::get('/telkominfra', [ViewTelkominfraController::class, 'index'])->name('api.maintenance.index');
+Route::get('/telkominfra/{id}', [ViewTelkominfraController::class, 'show'])->name('api.maintenance.show');
 
 // // Debug route to inspect headers and host when accessed via devtunnels/reverse proxies
 // Route::get('/debug-headers', function (Request $request) {

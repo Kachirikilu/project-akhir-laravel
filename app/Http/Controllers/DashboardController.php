@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\JadwalCeramah;
 // use App\Models\IoTCamera;
 use Carbon\Carbon;
+use App\Http\Controllers\Telkominfra\KeluhPenggunaController;
+use App\Http\Controllers\Telkominfra\ViewTelkominfraController;
+use Illuminate\Http\Request;
+
 
 class DashboardController extends Controller
 {
@@ -49,9 +53,6 @@ class DashboardController extends Controller
         $this->startOfLastWeek = $lastWeek->startOfWeek()->format('Y-m-d');
         $this->endOfLastWeek = $lastWeek->endOfWeek()->format('Y-m-d');
 
-        // $this->jadwalHariIni = JadwalCeramah::where('tanggal_ceramah', $this->today)
-        //     ->orderBy('jam_mulai')
-        //     ->get();
        $this->jadwalHariIni = JadwalCeramah::whereRaw("DATE(tanggal_ceramah) = ?", [$this->today])
             ->orderBy('jam_mulai')
             ->get();
@@ -60,32 +61,6 @@ class DashboardController extends Controller
         $this->jadwalBelumTerlaksanaCount = JadwalCeramah::where('tanggal_ceramah', '>=', $this->today)->count();
         $this->jadwalSudahTerlaksanaCount = JadwalCeramah::where('tanggal_ceramah', '<', $this->today)->count();
         $this->totalJadwalCount = JadwalCeramah::count();
-
-        // $this->jadwalMingguIni = JadwalCeramah::whereBetween('tanggal_ceramah', [$this->startOfWeek, $this->endOfWeek])
-        //     ->orderByDesc('tanggal_ceramah')
-        //     ->orderByDesc('jam_mulai')
-        //     ->get();
-
-        // $this->jadwalMingguDepan = JadwalCeramah::whereBetween('tanggal_ceramah', [$this->startOfNextWeek, $this->endOfNextWeek])
-        //     ->orderByDesc('tanggal_ceramah')
-        //     ->orderByDesc('jam_mulai')
-        //     ->get();
-
-        // $this->jadwalMingguSelanjutnya = JadwalCeramah::where('tanggal_ceramah', '>', $this->endOfNextWeek)
-        //     ->orderByDesc('tanggal_ceramah')
-        //     ->orderByDesc('jam_mulai')
-        //     ->paginate(9);
-
-        // $this->jadwalSudahTerlaksana = JadwalCeramah::where(function ($query) {
-        //     $query->where('tanggal_ceramah', '<', $this->today)
-        //         ->orWhere(function ($q) {
-        //             $q->where('tanggal_ceramah', $this->today)
-        //                 ->where('jam_mulai', '<=', $this->nowTime);
-        //         });
-        // })
-        //     ->orderByDesc('tanggal_ceramah')
-        //     ->orderByDesc('jam_mulai')
-        //     ->paginate(10);
 
         $this->jadwalMingguIni = JadwalCeramah::whereRaw("DATE(tanggal_ceramah) BETWEEN ? AND ?", [$this->startOfWeek, $this->endOfWeek])
             ->orderByDesc('tanggal_ceramah')
@@ -116,9 +91,15 @@ class DashboardController extends Controller
         // $this->iotCamera = IoTCamera::orderByDesc('created_at')->paginate(12);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        return view('dashboard', [
+        $keluhController = new KeluhPenggunaController;
+        $keluhData = $keluhController->keluh();
+
+        $perjalananController = new ViewTelkominfraController;
+        $perjalananData = $perjalananController->perjalanan($request);
+
+        return view('dashboard', array_merge($keluhData, $perjalananData, [
             'jadwalBelumTerlaksanaCount' => $this->jadwalBelumTerlaksanaCount,
             'jadwalSudahTerlaksanaCount' => $this->jadwalSudahTerlaksanaCount,
             'totalJadwalCount' => $this->totalJadwalCount,
@@ -128,13 +109,18 @@ class DashboardController extends Controller
             'jadwalSudahTerlaksana' => $this->jadwalSudahTerlaksana,
             'jadwalHariIni' => $this->jadwalHariIni,
             // 'iotCamera' => $this->iotCamera
-        ]);
+        ]));
     }
 
-    
-    public function user()
+    public function user(Request $request)
     {
-        return view('user-interface', [
+        $keluhController = new KeluhPenggunaController;
+        $keluhData = $keluhController->keluh();
+
+        $perjalananController = new ViewTelkominfraController;
+        $perjalananData = $perjalananController->perjalanan($request);
+
+        return view('user-interface', array_merge($keluhData, $perjalananData, [
             'jadwalBelumTerlaksanaCount' => $this->jadwalBelumTerlaksanaCount,
             'jadwalSudahTerlaksanaCount' => $this->jadwalSudahTerlaksanaCount,
             'totalJadwalCount' => $this->totalJadwalCount,
@@ -144,6 +130,6 @@ class DashboardController extends Controller
             'jadwalSudahTerlaksana' => $this->jadwalSudahTerlaksana,
             'jadwalHariIni' => $this->jadwalHariIni,
             // 'iotCamera' => $this->iotCamera
-        ]);
+        ]));
     }
 }

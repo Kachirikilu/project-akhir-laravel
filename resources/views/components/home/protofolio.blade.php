@@ -24,45 +24,73 @@
     </div>
 </div> --}}
 
+@php
+    $appName = env('APP_NAME');
+@endphp
 
 <div id="scroll-home" class="scroll-mt-20 bg-gray-200 mt-16">
-    <div class="container mx-auto py-8 px-4 sm:px-6 md:px-0 lg:px-20 xl:px-40 md:flex md:justify-center md:items-center">
+    <div
+        class="container mx-auto py-10 px-4 sm:px-6 md:px-0 lg:px-20 xl:px-40 md:flex md:justify-center md:items-center">
         <div class="md:w-1/2 md:mr-8">
-            <h1 class="text-3xl font-bold mb-4">Al-Aqobah 1</h1>
-            <p class="text-lg mb-4 text-justify mr-3">
-                Masjid Al-Aqobah 1 merupakan salah satu rumah ibadah yang terletak di Palembang.
-                Sebagai bagian dari komunitas muslim setempat, masjid ini menjadi pusat kegiatan
-                keagamaan, pendidikan, dan sosial bagi warga sekitar. Dengan arsitektur yang
-                mungkin memiliki ciri khas tersendiri, Al-Aqobah 1 hadir sebagai tempat yang
-                khusyuk untuk beribadah dan mempererat tali silaturahmi antar umat.
-                Keberadaannya memiliki peran penting dalam kehidupan spiritual dan kebersamaan
-                masyarakat di lingkungannya.
-            </p>
-            <div class="flex col-span-1 gap-4">
-                <a href="#scroll-grup-jadwal" id="scroll-ke-grup-jadwal-3" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Lihat Kegiatan
-                </a>
-                {{-- <a href="#scroll-map" id="scroll-ke-map-2" id="scroll-ke-grup-jadwal" class="bg-green-500 hover:bg-green-700 h-9 text-white font-bold py-2 px-4 rounded">
-                    Lokasi
-                </a> --}}
-                <a href="#scroll-map" id="scroll-ke-map-2" target="_blank" rel="noopener noreferrer">
-                    <img src="/images/icons/gmaps.png" class="w-9" />
-                </a>
-                {{-- <a href="https://www.facebook.com/share/19SofgsQFs/" target="_blank" rel="noopener noreferrer">
-                    <img src="/images/icons/facebook.png" class="w-9" />
-                </a>
-                <a href="https://www.instagram.com/athif_kyuziera/profilecard/?igsh=NHFsazN2a2diM3Rp " target="_blank" rel="noopener noreferrer">
-                    <img src="/images/icons/instagram.png" class="w-9" />
-                </a> --}}
-                <a href="https://wa.me/628985655826" target="_blank" rel="noopener noreferrer">
-                    <img src="/images/icons/whatsapp.png" class="w-9" />
-                </a>
-            </div>
+
+            @if ($appName == 'Al-Aqobah 1')
+                <h1 class="text-3xl font-bold mb-4">Al-Aqobah 1</h1>
+                <p class="text-lg mb-4 text-justify mr-3">
+                    Masjid Al-Aqobah 1 merupakan salah satu rumah ibadah yang terletak di Palembang.
+                    Sebagai bagian dari komunitas muslim setempat, masjid ini menjadi pusat kegiatan
+                    keagamaan, pendidikan, dan sosial bagi warga sekitar. Dengan arsitektur yang
+                    mungkin memiliki ciri khas tersendiri, Al-Aqobah 1 hadir sebagai tempat yang
+                    khusyuk untuk beribadah dan mempererat tali silaturahmi antar umat.
+                    Keberadaannya memiliki peran penting dalam kehidupan spiritual dan kebersamaan
+                    masyarakat di lingkungannya.
+                </p>
+                <div class="flex col-span-1 gap-4">
+                    <a href="/#grup-jadwal" id="scroll-ke-grup-jadwal-3"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Lihat Kegiatan
+                    </a>
+                    <a href="#scroll-map" id="scroll-ke-map-2" rel="noopener noreferrer">
+                        <img src="/images/icons/gmaps.png" class="w-9" />
+                    </a>
+                    <a href="https://wa.me/628985655826" target="_blank" rel="noopener noreferrer">
+                        <img src="/images/icons/whatsapp.png" class="w-9" />
+                    </a>
+                </div>
         </div>
         <div class="md:w-1/2 mt-8 md:mt-0">
-            <img src="/images/masjid/Pic 1_Al-Aqobah 1.jpg" alt="Responsive Design" class="w-full h-full object-cover rounded-md shadow-md">
+            <img src="/images/masjid/Pic 1_Al-Aqobah 1.jpg" alt="Responsive Design"
+                class="w-full h-full object-cover rounded-md shadow-md">
+        </div>
+    @elseif ($appName == 'PT. Telkominfra')
+        <h1 class="text-3xl font-bold mb-4">PT. Telkominfra</h1>
+        <p class="text-lg mb-4 text-justify mr-3">
+            Aset ini adalah infrastruktur transmisi kritis yang terletak di Palembang. Berfungsi sebagai pusat
+            operasional jaringan, aset ini mendukung konektivitas data dan telekomunikasi bagi komunitas setempat.
+            Dengan teknologi andal, ia memastikan transmisi bandwidth tinggi serta ketersediaan layanan jaringan yang
+            prima. Keberadaannya esensial untuk mendukung aktivitas digital, bisnis, dan memperkuat inklusi digital bagi
+            seluruh masyarakat di wilayah operasionalnya.
+            masyarakat di lingkungannya.
+        </p>
+        <div class="flex col-span-1 gap-4">
+            <a  href="/keluh-pengguna/create"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Form Masukkan
+            </a>
+            <a href="#scroll-map" id="scroll-ke-map-2" rel="noopener noreferrer">
+                <img src="/images/icons/gmaps.png" class="w-9" />
+            </a>
+            <a href="https://wa.me/628985655826" target="_blank" rel="noopener noreferrer">
+                <img src="/images/icons/whatsapp.png" class="w-9" />
+            </a>
         </div>
     </div>
+    <div class="md:w-1/2 mt-8 md:mt-0">
+        <img src="/images/telkominfra/Pic 1_Telkominfra.jpg" alt="Responsive Design"
+            class="w-full h-full object-cover rounded-md shadow-md">
+    </div>
+    @endif
+
+</div>
 
 </div>
 

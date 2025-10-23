@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('id_perjalanan')->unique()->comment('ID unik sesi dari log NMF atau UUID');
             $table->string('nama_pengguna');
             $table->string('nama_tempat');
+            $table->boolean('selesai')->default(false)->comment('Menandakan apakah perbaikan telah dilaksanakan');
             $table->timestamps();
         });
     }

@@ -229,7 +229,7 @@ class TelkominfraController extends Controller
 
             DB::commit();
 
-            return redirect()->route('telkominfra.show', $perjalananId)
+            return redirect()->route('maintenance.show', $perjalananId)
                 ->with('success', 'Data berhasil disimpan. Total GPS: ' . count($dataGPS) . ', Total Sinyal: ' . count($dataSinyal));
 
         } catch (\Exception $e) {

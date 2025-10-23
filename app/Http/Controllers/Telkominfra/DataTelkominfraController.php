@@ -105,7 +105,7 @@ class DataTelkominfraController extends Controller
     //         }
     //     }
 
-    //     return redirect()->route('telkominfra.show', $perjalanan->id)
+    //     return redirect()->route('maintenance.show', $perjalanan->id)
     //         ->with('success', 'Semua file berhasil diproses untuk perjalanan ID: ' . $perjalanan->id_perjalanan);
     // }
 
@@ -198,7 +198,7 @@ class DataTelkominfraController extends Controller
             }
         }
 
-        return redirect()->route('telkominfra.show', $perjalanan->id)
+        return redirect()->route('maintenance.show', $perjalanan->id)
             ->with('success', 'Semua file berhasil diproses untuk perjalanan ID: ' . $perjalanan->id_perjalanan);
     }
 
@@ -211,9 +211,58 @@ class DataTelkominfraController extends Controller
      * @param  int  $id ID dari Perjalanan yang akan diupdate.
      * @return \Illuminate\Http\Response
      */
+    // public function update(Request $request, $id)
+    // {
+    //     try {
+    //         $request->validate([
+    //             'nama_pengguna' => 'required|string|max:255',
+    //             'nama_tempat' => 'required|string|max:255',
+    //         ], [
+    //             'nama_pengguna.required' => 'Nama Pengguna wajib diisi.',
+    //             'nama_tempat.required' => 'Nama Tempat/Lokasi wajib diisi.',
+    //         ]);
+    //         $perjalanan = Perjalanan::findOrFail($id);
+
+    //         $perjalanan->nama_pengguna = $request->nama_pengguna;
+    //         $perjalanan->nama_tempat = $request->nama_tempat;
+    //         $perjalanan->save();
+    //         Log::info("Perjalanan ID: {$id} berhasil diperbarui.");
+
+    //         return redirect()->route('maintenance.show', $perjalanan->id)
+    //                          ->with('success', 'Detail Perjalanan (Nama Pengguna & Lokasi) berhasil diperbarui.');
+
+    //     } catch (ValidationException $e) {
+    //         return redirect()->back()
+    //                          ->withErrors($e->errors())
+    //                          ->withInput();
+    //     } catch (\Exception $e) {
+    //         Log::error('Gagal memperbarui perjalanan ID: ' . $id . '. Error: ' . $e->getMessage());
+    //         return redirect()->back()->with('error', 'Gagal memperbarui data. Terjadi kesalahan server.');
+    //     }
+    // }
     public function update(Request $request, $id)
     {
         try {
+            $perjalanan = Perjalanan::findOrFail($id);
+
+            // KASUS 1: Hanya memperbarui status 'selesai' (dari form PATCH/PUT status)
+            if ($request->has('selesai')) {
+                // Kita bisa menggunakan 'PATCH' untuk ini, Laravel tetap menerima kedua method
+                // Anda bisa tambahkan validasi untuk memastikan nilai adalah 0 atau 1
+                $request->validate(['selesai' => 'required|boolean']); 
+                
+                $perjalanan->selesai = $request->selesai;
+                $perjalanan->save();
+                
+                $statusMsg = $perjalanan->selesai ? 'Selesai' : 'Belum Selesai';
+                
+                Log::info("Perjalanan ID: {$id} status diubah menjadi {$statusMsg}.");
+                
+                return redirect()->route('maintenance.show', $perjalanan->id)
+                                ->with('success', "Status Perjalanan berhasil diubah menjadi: {$statusMsg}.");
+            }
+
+            // KASUS 2: Memperbarui Detail Teks (dari form PUT detail)
             $request->validate([
                 'nama_pengguna' => 'required|string|max:255',
                 'nama_tempat' => 'required|string|max:255',
@@ -221,20 +270,20 @@ class DataTelkominfraController extends Controller
                 'nama_pengguna.required' => 'Nama Pengguna wajib diisi.',
                 'nama_tempat.required' => 'Nama Tempat/Lokasi wajib diisi.',
             ]);
-            $perjalanan = Perjalanan::findOrFail($id);
 
             $perjalanan->nama_pengguna = $request->nama_pengguna;
             $perjalanan->nama_tempat = $request->nama_tempat;
             $perjalanan->save();
-            Log::info("Perjalanan ID: {$id} berhasil diperbarui.");
+            
+            Log::info("Perjalanan ID: {$id} detail berhasil diperbarui.");
 
-            return redirect()->route('telkominfra.show', $perjalanan->id)
-                             ->with('success', 'Detail Perjalanan (Nama Pengguna & Lokasi) berhasil diperbarui.');
+            return redirect()->route('maintenance.show', $perjalanan->id)
+                            ->with('success', 'Detail Perjalanan (Nama Pengguna & Lokasi) berhasil diperbarui.');
 
         } catch (ValidationException $e) {
             return redirect()->back()
-                             ->withErrors($e->errors())
-                             ->withInput();
+                            ->withErrors($e->errors())
+                            ->withInput();
         } catch (\Exception $e) {
             Log::error('Gagal memperbarui perjalanan ID: ' . $id . '. Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Gagal memperbarui data. Terjadi kesalahan server.');
@@ -281,14 +330,14 @@ class DataTelkominfraController extends Controller
                 Log::info('Sesi Perjalanan utama berhasil dihapus.');
             });
 
-            return redirect()->route('telkominfra.index')->with('success', 'Sesi Drive Test dan semua data (termasuk file log) berhasil dihapus!');
+            return redirect()->route('maintenance.index')->with('success', 'Sesi Drive Test dan semua data (termasuk file log) berhasil dihapus!');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::warning("Percobaan hapus gagal: Perjalanan ID {$id} tidak ditemukan.");
-            return redirect()->route('telkominfra.index')->with('error', 'Data yang ingin dihapus tidak ditemukan.');
+            return redirect()->route('maintenance.index')->with('error', 'Data yang ingin dihapus tidak ditemukan.');
         } catch (\Exception $e) {
             Log::error('Gagal menghapus perjalanan ID: ' . $id . '. Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-            return redirect()->route('telkominfra.index')->with('error', 'Gagal menghapus data. Terjadi kesalahan server. Detail error dicatat.');
+            return redirect()->route('maintenance.index')->with('error', 'Gagal menghapus data. Terjadi kesalahan server. Detail error dicatat.');
         }
     }
 
@@ -324,11 +373,11 @@ class DataTelkominfraController extends Controller
                 Log::info('Satu data log DataPerjalanan berhasil dihapus.');
             });
 
-            return redirect()->route('telkominfra.show', $perjalananId)->with('success', 'Satu log data dan file terkait berhasil dihapus!');
+            return redirect()->route('maintenance.show', $perjalananId)->with('success', 'Satu log data dan file terkait berhasil dihapus!');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::warning("Percobaan hapus log gagal: DataPerjalanan ID {$id} tidak ditemukan.");
-            return redirect()->route('telkominfra.index')->with('error', 'Log data yang ingin dihapus tidak ditemukan.');
+            return redirect()->route('maintenance.index')->with('error', 'Log data yang ingin dihapus tidak ditemukan.');
         } catch (\Exception $e) {
             Log::error('Gagal menghapus log data ID: ' . $id . '. Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return redirect()->back()->with('error', 'Gagal menghapus log data. Terjadi kesalahan server. Detail error dicatat.');

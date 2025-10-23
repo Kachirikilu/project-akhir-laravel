@@ -1,11 +1,22 @@
+@php
+    $appName = env('APP_NAME');
+@endphp
 <x-guest-layout>
     <x-authentication-card>
         <x-slot name="logo">
             {{-- <x-authentication-card-logo /> --}}
         </x-slot>
-        <div class="mb-3">
-            <img src="/images/masjid/Logo PT PUSRI.png" alt="PT. PUSRI" class="h-32 mx-auto">
-        </div>
+        @if ($appName == 'Al-Aqobah 1')
+            <div class="mb-3">
+                <img src="/images/masjid/Logo PT PUSRI.png" alt="PT. PUSRI" class="h-32 mx-auto">
+            </div>
+        @elseif ($appName == 'PT. Telkominfra')
+            <div class="mb-3">
+                <img src="/images/telkominfra/Logo PT Telkominfra.png" alt="PT. Telkominfra" class="h-32 mx-auto">
+            </div>
+        @endif
+
+
 
         <div class="mb-4 text-sm text-gray-600">
             {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}

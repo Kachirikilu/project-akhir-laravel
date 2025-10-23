@@ -212,7 +212,7 @@
                         <h5 class="text-sm text-gray-600">(Perangkat: {{ $mapItem['perangkat'] }})</h5>
 
                         {{-- ID PETA HARUS UNIK --}}
-                        <form action="{{ route('perjalananData.destroy', $mapItem['id']) }}" method="POST"
+                        <form action="{{ route('perjalanan.dataDestroy', $mapItem['id']) }}" method="POST"
                             class="inline-block"
                             onsubmit="return confirm('Apakah Anda yakin ingin menghapus data log ini? Ini tidak dapat dibatalkan.');">
                             @csrf

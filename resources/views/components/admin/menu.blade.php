@@ -1,3 +1,7 @@
+@php
+    $appName = env('APP_NAME');
+@endphp
+
 <aside class="hidden lg:block bg-gray-700 text-white w-56 left-0 h-auto py-8 px-4 z-50">
     <h2 class="text-2xl font-semibold mb-6 border-b border-gray-600 pb-2">Admin Panel</h2>
     <ul class="space-y-2">
@@ -6,31 +10,49 @@
         <li><a href="/dashboard"
                 class="{{ request()->is('dashboard') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-700' }} block py-2 px-4 rounded">Dashboard</a>
         </li>
-        <li>
-            <a href="/schedules"
-                class="group {{ request()->is('schedules*') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-700' }} block py-2 px-4 rounded">
-                Schedules
-                <span class="group-hover:opacity-30 transition-opacity duration-200">
-                    @if (request()->is('schedules/create'))
-                        | Create
-                    @elseif(request()->is('schedules/*/edit'))
-                        | Edit
-                    @elseif(request()->is('schedules/*'))
-                        | Show
-                    @endif
-                </span>
-            </a>
-        </li>
 
-        <li><a href="/telkominfra"
-                class="group {{ request()->is('telkominfra*') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-700' }} block py-2 px-4 rounded">
-                Telkominfra
-                <span class="group-hover:opacity-30 transition-opacity duration-200">
-                    @if (request()->is('telkominfra/*'))
-                        | Show
-                    @endif
-                </span>
-            </a></li>
+        @if ($appName == 'Al-Aqobah 1')
+            <li>
+                <a href="/schedules"
+                    class="group {{ request()->is('schedules*') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-700' }} block py-2 px-4 rounded">
+                    Schedules
+                    <span class="group-hover:opacity-30 transition-opacity duration-200">
+                        @if (request()->is('schedules/create'))
+                            | Create
+                        @elseif(request()->is('schedules/*/edit'))
+                            | Edit
+                        @elseif(request()->is('schedules/*'))
+                            | Show
+                        @endif
+                    </span>
+                </a>
+            </li>
+        @endif
+
+
+        @if ($appName == 'PT. Telkominfra')
+            <li>
+                <a href="{{ route('keluh_pengguna.index') }}"
+                    class="group {{ request()->is('keluh-pengguna*') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-700' }} block py-2 px-4 rounded">
+                    Keluh Pengguna
+                    <span class="group-hover:opacity-30 transition-opacity duration-200">
+                        @if (request()->is('keluh-pengguna/*'))
+                            | Show
+                        @endif
+                    </span>
+                </a>
+            </li>
+
+            <li><a href="/maintenance"
+                    class="group {{ request()->is('maintenance*') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-700' }} block py-2 px-4 rounded">
+                    Maintenance
+                    <span class="group-hover:opacity-30 transition-opacity duration-200">
+                        @if (request()->is('maintenance/*'))
+                            | Show
+                        @endif
+                    </span>
+                </a></li>
+        @endif
 
         <li><a href="{{ route('profile.show') }}"
                 class="{{ request()->is('user/profile') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-700' }} block py-2 px-4 rounded">{{ Auth::user()->name ?? 'Pengunjung' }}</a>
@@ -73,6 +95,8 @@
                 <li><a href="/dashboard"
                         class="{{ request()->is('dashboard') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-100' }} block py-2 px-4 rounded">Dashboard</a>
                 </li>
+                @if ($appName == 'Al-Aqobah 1')
+
                 <li><a href="/schedules"
                         class="group {{ request()->is('schedules*') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-100' }} block py-2 px-4 rounded">
                         Schedules
@@ -86,15 +110,30 @@
                             @endif
                         </span>
                     </a></li>
-                <li><a href="/telkominfra"
-                        class="group {{ request()->is('telkominfra*') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-100' }} block py-2 px-4 rounded">
-                        Telkominfra
-                        <span class="group-hover:opacity-30 transition-opacity duration-200">
-                            @if (request()->is('telkominfra/*'))
-                                | Show
-                            @endif
-                        </span>
-                    </a></li>
+                @endif
+                @if ($appName == 'PT. Telkominfra')
+
+                    <li>
+                        <a href="{{ route('keluh_pengguna.index') }}"
+                            class="group {{ request()->is('keluh-pengguna*') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-100' }} block py-2 px-4 rounded">
+                            Keluh Pengguna
+                            <span class="group-hover:opacity-30 transition-opacity duration-200">
+                                @if (request()->is('keluh-pengguna/*'))
+                                    | Show
+                                @endif
+                            </span>
+                        </a>
+                    </li>
+                    <li><a href="/maintenance"
+                            class="group {{ request()->is('maintenance*') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-100' }} block py-2 px-4 rounded">
+                            Maintenance
+                            <span class="group-hover:opacity-30 transition-opacity duration-200">
+                                @if (request()->is('maintenance/*'))
+                                    | Show
+                                @endif
+                            </span>
+                        </a></li>
+                @endif
                 <li><a href="{{ route('profile.show') }}"
                         class="{{ request()->is('user/profile') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-100' }} block py-2 px-4 rounded">{{ Auth::user()->name ?? 'Pengunjung' }}</a>
                 </li>

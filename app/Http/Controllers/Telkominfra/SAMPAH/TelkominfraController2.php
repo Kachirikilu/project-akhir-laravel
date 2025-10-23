@@ -648,7 +648,7 @@ class TelkominfraController extends Controller
             }
 
             // --- 5. REDIRECT SUKSES ---
-            return redirect()->route('telkominfra.show', $perjalananId)
+            return redirect()->route('maintenance.show', $perjalananId)
                 ->with('success', 'Data log berhasil ditambahkan. File: ' . $finalFileName . ' di Perjalanan ID Sesi: ' . $perjalanan->id_perjalanan);
 
         } catch (\Exception $e) {
@@ -869,7 +869,7 @@ class TelkominfraController extends Controller
             Log::info("Perjalanan ID: {$id} berhasil diperbarui.");
 
             // 4. Redirect kembali ke halaman show dengan notifikasi sukses
-            return redirect()->route('telkominfra.show', $perjalanan->id)
+            return redirect()->route('maintenance.show', $perjalanan->id)
                              ->with('success', 'Detail Perjalanan (Nama Pengguna & Lokasi) berhasil diperbarui.');
 
         } catch (ValidationException $e) {
@@ -939,24 +939,24 @@ class TelkominfraController extends Controller
             });
 
             // Beri notifikasi sukses dan arahkan kembali ke halaman index
-            return redirect()->route('telkominfra.index')->with('success', 'Sesi Drive Test dan semua data (termasuk file log) berhasil dihapus!');
+            return redirect()->route('maintenance.index')->with('success', 'Sesi Drive Test dan semua data (termasuk file log) berhasil dihapus!');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             // Ditangani jika Perjalanan tidak ditemukan
             Log::warning("Percobaan hapus gagal: Perjalanan ID {$id} tidak ditemukan.");
-            return redirect()->route('telkominfra.index')->with('error', 'Data yang ingin dihapus tidak ditemukan.');
+            return redirect()->route('maintenance.index')->with('error', 'Data yang ingin dihapus tidak ditemukan.');
         } catch (\Exception $e) {
             // Tangani semua kesalahan lain (kegagalan file, relasi, dll.)
             Log::error('Gagal menghapus perjalanan ID: ' . $id . '. Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             
             // Beri notifikasi error dan arahkan kembali ke halaman index
-            return redirect()->route('telkominfra.index')->with('error', 'Gagal menghapus data. Terjadi kesalahan server. Detail error dicatat.');
+            return redirect()->route('maintenance.index')->with('error', 'Gagal menghapus data. Terjadi kesalahan server. Detail error dicatat.');
         }
     }
 
     /**
      * Hapus satu data log (PerjalananData) dan file terkait.
-     * Metode ini dipanggil oleh route 'perjalananData.destroy'.
+     * Metode ini dipanggil oleh route 'perjalanan.dataDestroy'.
      *
      * @param  int  $id ID dari PerjalananData yang akan dihapus.
      * @return \Illuminate\Http\Response
@@ -996,13 +996,13 @@ class TelkominfraController extends Controller
             });
 
             // Beri notifikasi sukses dan arahkan kembali ke halaman detail perjalanan
-            return redirect()->route('telkominfra.show', $perjalananId)->with('success', 'Satu log data dan file terkait berhasil dihapus!');
+            return redirect()->route('maintenance.show', $perjalananId)->with('success', 'Satu log data dan file terkait berhasil dihapus!');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             // Ditangani jika PerjalananData tidak ditemukan
             Log::warning("Percobaan hapus log gagal: PerjalananData ID {$id} tidak ditemukan.");
             // Redirect ke halaman index jika ID perjalanan tidak diketahui
-            return redirect()->route('telkominfra.index')->with('error', 'Log data yang ingin dihapus tidak ditemukan.');
+            return redirect()->route('maintenance.index')->with('error', 'Log data yang ingin dihapus tidak ditemukan.');
         } catch (\Exception $e) {
             // Tangani semua kesalahan lain
             Log::error('Gagal menghapus log data ID: ' . $id . '. Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);

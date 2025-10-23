@@ -99,7 +99,7 @@ class DataTelkominfraController extends Controller
     //             Log::warning("File temporer hilang setelah commit DB: " . $oldPath);
     //         }
 
-    //         return redirect()->route('telkominfra.show', $perjalananId)
+    //         return redirect()->route('maintenance.show', $perjalananId)
     //             ->with('success', 'Data log berhasil ditambahkan. File: ' . $finalFileName . ' di Perjalanan ID Sesi: ' . $perjalanan->id_perjalanan);
 
     //     } catch (\Exception $e) {
@@ -223,7 +223,7 @@ class DataTelkominfraController extends Controller
                 Log::error("Gagal menyimpan data sinyal: " . $signalEx->getMessage());
             }
 
-            return redirect()->route('telkominfra.show', $perjalananId)
+            return redirect()->route('maintenance.show', $perjalananId)
                 ->with('success', 'Data log dan sinyal berhasil ditambahkan. File: ' . $finalFileName . ' di Perjalanan ID: ' . $perjalanan->id_perjalanan);
 
         } catch (\Exception $e) {
@@ -266,7 +266,7 @@ class DataTelkominfraController extends Controller
             $perjalanan->save();
             Log::info("Perjalanan ID: {$id} berhasil diperbarui.");
 
-            return redirect()->route('telkominfra.show', $perjalanan->id)
+            return redirect()->route('maintenance.show', $perjalanan->id)
                              ->with('success', 'Detail Perjalanan (Nama Pengguna & Lokasi) berhasil diperbarui.');
 
         } catch (ValidationException $e) {
@@ -319,20 +319,20 @@ class DataTelkominfraController extends Controller
                 Log::info('Sesi Perjalanan utama berhasil dihapus.');
             });
 
-            return redirect()->route('telkominfra.index')->with('success', 'Sesi Drive Test dan semua data (termasuk file log) berhasil dihapus!');
+            return redirect()->route('maintenance.index')->with('success', 'Sesi Drive Test dan semua data (termasuk file log) berhasil dihapus!');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::warning("Percobaan hapus gagal: Perjalanan ID {$id} tidak ditemukan.");
-            return redirect()->route('telkominfra.index')->with('error', 'Data yang ingin dihapus tidak ditemukan.');
+            return redirect()->route('maintenance.index')->with('error', 'Data yang ingin dihapus tidak ditemukan.');
         } catch (\Exception $e) {
             Log::error('Gagal menghapus perjalanan ID: ' . $id . '. Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-            return redirect()->route('telkominfra.index')->with('error', 'Gagal menghapus data. Terjadi kesalahan server. Detail error dicatat.');
+            return redirect()->route('maintenance.index')->with('error', 'Gagal menghapus data. Terjadi kesalahan server. Detail error dicatat.');
         }
     }
 
     /**
      * Hapus satu data log (PerjalananData) dan file terkait.
-     * Metode ini dipanggil oleh route 'perjalananData.destroy'.
+     * Metode ini dipanggil oleh route 'perjalanan.dataDestroy'.
      *
      * @param  int  $id ID dari PerjalananData yang akan dihapus.
      * @return \Illuminate\Http\Response
@@ -362,11 +362,11 @@ class DataTelkominfraController extends Controller
                 Log::info('Satu data log PerjalananData berhasil dihapus.');
             });
 
-            return redirect()->route('telkominfra.show', $perjalananId)->with('success', 'Satu log data dan file terkait berhasil dihapus!');
+            return redirect()->route('maintenance.show', $perjalananId)->with('success', 'Satu log data dan file terkait berhasil dihapus!');
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::warning("Percobaan hapus log gagal: PerjalananData ID {$id} tidak ditemukan.");
-            return redirect()->route('telkominfra.index')->with('error', 'Log data yang ingin dihapus tidak ditemukan.');
+            return redirect()->route('maintenance.index')->with('error', 'Log data yang ingin dihapus tidak ditemukan.');
         } catch (\Exception $e) {
             Log::error('Gagal menghapus log data ID: ' . $id . '. Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return redirect()->back()->with('error', 'Gagal menghapus log data. Terjadi kesalahan server. Detail error dicatat.');
