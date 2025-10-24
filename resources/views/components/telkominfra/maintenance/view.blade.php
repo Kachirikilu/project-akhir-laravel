@@ -10,7 +10,7 @@
 <div class="bg-white shadow-xl sm:rounded-lg p-6">
     <h3 class="text-lg font-semibold mb-4">Daftar Sesi Drive Test</h3>
 
-    @auth
+    @if(Auth::user()?->admin)
         {{-- ========== FORM UPLOAD DATA BARU ========== --}}
         <div class="mb-6 border p-4 rounded-lg bg-gray-50">
             <h4 class="text-md font-bold mb-3">Unggah Data Perjalanan (NMF) Baru</h4>
@@ -70,7 +70,7 @@
                 </button>
             </form>
         </div>
-    @endauth
+    @endif
 
     <div class="container mx-auto p-4">
 
@@ -85,7 +85,6 @@
                     class="bg-indigo-100 p-6 rounded-xl shadow-lg border-l-4 border-indigo-600 flex justify-between items-start transition duration-300 hover:shadow-xl hover:scale-[1.01]">
                     <div class="space-y-1">
                         <p class="text-sm font-medium text-indigo-600 uppercase tracking-wider">Total Perjalanan</p>
-                        {{-- ASUMSI: $totalPerjalanan telah disiapkan di Controller --}}
                         <p class="text-4xl font-extrabold text-indigo-900">{{ number_format($totalPerjalanan ?? 0) }}
                         </p>
                     </div>
@@ -97,7 +96,6 @@
                     class="bg-green-100 p-6 rounded-xl shadow-lg border-l-4 border-green-600 flex justify-between items-start transition duration-300 hover:shadow-xl hover:scale-[1.01]">
                     <div class="space-y-1">
                         <p class="text-sm font-medium text-green-600 uppercase tracking-wider">Sudah Selesai</p>
-                        {{-- ASUMSI: $perjalananSelesai telah disiapkan di Controller --}}
                         <p class="text-4xl font-extrabold text-green-900">{{ number_format($perjalananSelesai ?? 0) }}
                         </p>
                     </div>
@@ -109,7 +107,6 @@
                     class="bg-yellow-100 p-6 rounded-xl shadow-lg border-l-4 border-yellow-600 flex justify-between items-start transition duration-300 hover:shadow-xl hover:scale-[1.01]">
                     <div class="space-y-1">
                         <p class="text-sm font-medium text-yellow-600 uppercase tracking-wider">Belum Selesai</p>
-                        {{-- ASUMSI: $perjalananBelumSelesai telah disiapkan di Controller --}}
                         <p class="text-4xl font-extrabold text-yellow-900">
                             {{ number_format($perjalananBelumSelesai ?? 0) }}</p>
                     </div>
@@ -122,7 +119,6 @@
             {{-- ========== PENCARIAN & TAB FILTER (BARU) ========== --}}
             <div class="mb-6 p-4 bg-white rounded-lg shadow-md border border-gray-100">
                 <div class="flex border-b mb-4">
-                    {{-- Tambahkan tab untuk filter status --}}
                     <button id="mode-all" data-mode=""
                         class="tab-mode px-4 py-2 text-sm font-medium rounded-t-lg transition duration-150 border-b-2 {{ !isset($searchMode) || $searchMode == '' ? 'border-indigo-500 text-indigo-700' : 'border-transparent text-gray-500 hover:text-indigo-700' }}">
                         <i class="fas fa-list mr-2"></i> Semua Data ({{ number_format($totalPerjalanan) }})
@@ -191,10 +187,10 @@
                                             Pengguna</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                             Waktu Unggah</th>
-                                        @auth
+                                        @if(Auth::user()?->admin)
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                 Hapus</th>
-                                        @endauth
+                                        @endif
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
@@ -228,7 +224,7 @@
                                                 {{ $perjalanan->nama_pengguna }}</td>
                                             <td class="px-6 py-4 text-sm text-gray-500">
                                                 {{ $perjalanan->created_at->format('d M Y H:i') }}</td>
-                                            @auth
+                                            @if(Auth::user()?->admin)
                                                 <td class="px-6 py-4 text-center">
                                                     <form action="{{ route('perjalanan.destroy', $perjalanan->id) }}"
                                                         method="POST"
@@ -241,7 +237,7 @@
                                                         </button>
                                                     </form>
                                                 </td>
-                                            @endauth
+                                            @endif
                                         </tr>
                                     @empty
                                         <tr>
@@ -274,21 +270,18 @@
         const form = document.getElementById('search-form');
         const searchModeInput = document.getElementById('search-mode-input');
 
-        // Kontainer yang dimanipulasi
         const ajaxResultsContainer = document.getElementById('ajax-results');
         const defaultResultsContainer = document.getElementById('default-results');
         const tabButtons = document.querySelectorAll('.tab-mode');
 
-        // State mode pencarian awal (diambil dari Blade jika ada)
         let currentMode = searchModeInput.value;
 
         // TEMPLATE URLS
         const showUrlTemplate = '{{ route('maintenance.show', 'DUMMY_ID') }}'.replace('DUMMY_ID', '');
         const destroyUrlTemplate = '{{ route('perjalanan.destroy', 'DUMMY_ID') }}'.replace('DUMMY_ID', '');
-        const searchUrl = '{{ route('perjalanan.ajaxSearch') }}'; // Pastikan route ini benar
+        const searchUrl = '{{ route('perjalanan.ajaxSearch') }}';
         const csrfToken = '{{ csrf_token() }}';
 
-        // --- FUNGSI AJAX UTAMA (Dipanggil oleh input dan tab) ---
         async function runAjaxSearch(query, mode) {
             // Tampilkan Loading
             ajaxResultsContainer.innerHTML =
@@ -315,7 +308,6 @@
                     return;
                 }
 
-                // --- Mulai Buat HTML Tabel AJAX ---
                 let html = `
             <h3 class="text-xl font-bold text-indigo-700 mb-3">Hasil Filter / Pencarian Cepat</h3>
             <div class="bg-white shadow-lg rounded-lg overflow-hidden">
@@ -330,9 +322,9 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lokasi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pengguna</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu Unggah</th>
-                                @auth
+                                @if(Auth::user()?->admin)
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hapus</th>
-                                @endauth
+                                @endif
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -341,7 +333,6 @@
                 data.forEach(item => {
                     const showUrl = showUrlTemplate + item.id;
                     const deleteUrl = destroyUrlTemplate + item.id;
-                    // Format tanggal sama seperti di Blade
                     const formattedDate = new Date(item.created_at).toLocaleString('id-ID', {
                         day: '2-digit',
                         month: 'short',
@@ -368,7 +359,7 @@
                     <td class="px-6 py-4 text-sm text-gray-700">${item.nama_tempat ?? '-'}</td>
                     <td class="px-6 py-4 text-sm text-gray-500">${item.nama_pengguna ?? '-'}</td>
                     <td class="px-6 py-4 text-sm text-gray-500">${formattedDate}</td>
-                    @auth
+                    @if(Auth::user()?->admin)
                     <td class="px-6 py-4 text-center">
                         <form action="${deleteUrl}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
                              <input type="hidden" name="_token" value="${csrfToken}">
@@ -379,7 +370,7 @@
                              </button>
                            </form>
                     </td>
-                    @endauth
+                    @endif
                 </tr>
                 `;
                 });
@@ -397,9 +388,8 @@
         // --- LOGIC TAB SWITCH (TANPA RELOAD) ---
         function switchMode(newMode) {
             currentMode = newMode;
-            searchModeInput.value = newMode; // Update hidden input
+            searchModeInput.value = newMode;
 
-            // Update tampilan tab
             tabButtons.forEach(btn => {
                 if (btn.dataset.mode === newMode) {
                     btn.classList.add('border-indigo-500', 'text-indigo-700');
@@ -412,47 +402,33 @@
 
             const query = input.value.trim();
 
-            // Jika query kosong, tampilkan default results (yang sudah difilter oleh Blade)
             if (query.length === 0 && newMode === '{{ $searchMode ?? '' }}') {
-                // Jika mode yang dipilih sama dengan mode default halaman (dan tidak ada search), 
-                // kita tampilkan kembali hasil Blade default
                 ajaxResultsContainer.innerHTML = '';
                 ajaxResultsContainer.style.display = 'none';
                 defaultResultsContainer.style.display = 'block';
                 return;
             }
-
-            // Jalankan AJAX search dengan mode dan query saat ini
             runAjaxSearch(query, newMode);
         }
 
-        // Event Listener untuk tombol tab
         tabButtons.forEach(button => {
             button.addEventListener('click', () => {
-                // Pastikan tab berfungsi hanya jika ada perbedaan mode atau ada query
                 switchMode(button.dataset.mode);
             });
         });
 
-        // Mencegah form submit tradisional pada input dan menjalankan AJAX search saat mengetik
         form.addEventListener('submit', e => {
-            // Jika form disubmit (klik tombol Cari), kita tetap lakukan full submit 
-            // untuk menghandle pagination di server side
         });
 
         input.addEventListener('input', function() {
             const query = this.value.trim();
             const mode = currentMode;
-
-            // KASUS 1: Query Kosong. Tampilkan hasil default yang sudah difilter mode.
             if (query.length === 0) {
                 ajaxResultsContainer.innerHTML = '';
                 ajaxResultsContainer.style.display = 'none';
                 defaultResultsContainer.style.display = 'block';
                 return;
             }
-
-            // KASUS 2: Ada Query. Jalankan AJAX search.
             runAjaxSearch(query, mode);
         });
     });

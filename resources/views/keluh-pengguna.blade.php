@@ -1,18 +1,17 @@
 <x-app-layout>
 
-    @if (Auth::check())
+    {{-- @if(Auth::user()?->admin) --}}
         <x-admin.menu />
-    @else
+    {{-- @else
         <x-home.navbar />
-    @endif
+    @endif --}}
 
-    
 
-    @auth
+    {{-- @if(Auth::user()?->admin) --}}
        <div class="max-w-[1080px] mx-auto flex-1 p-1 sm:p-3 md:p-6 lg:p-8 overflow-y-auto">
-    @else
+    {{-- @else
         <div class="max-w-[1080px] mx-auto flex-1 pt-24 px-1 sm:px-3 md:px-6 lg:px-8 overflow-y-auto">
-    @endauth
+    @endif --}}
         @if (request()->is('keluh-pengguna'))
             <x-telkominfra.keluh-pengguna.view 
                 :totalKeluhan="$totalKeluhan"
@@ -20,6 +19,7 @@
                 :keluhanBelumSelesai="$keluhanBelumSelesai"
                 :keluhanSelesaiList="$keluhanSelesaiList"
                 :keluhanBelumSelesaiList="$keluhanBelumSelesaiList"
+                :keluhanSayaBelumSelesaiList="$keluhanSayaBelumSelesaiList"
                 :keluhanDiproses="$keluhanDiproses"
                 :keluhanDiprosesList="$keluhanDiprosesList"
             />

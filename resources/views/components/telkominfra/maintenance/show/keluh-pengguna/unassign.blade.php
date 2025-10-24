@@ -31,11 +31,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // ... (Kode untuk searchInput, hasilKomentar, assignForm, assignButton) ...
-        // ... (Logika searchInput.addEventListener('input', ...) tidak berubah) ...
-        // ... (Logika assignForm.addEventListener('submit', ...) tidak berubah) ...
-        
-        // --- LOGIKA BARU: UNASSIGN KOMENTAR ---
+
         document.querySelectorAll('.unassign-btn').forEach(button => {
             button.addEventListener('click', async function() {
                 const keluhanId = this.dataset.id;
@@ -62,12 +58,10 @@
 
                     if (result.success) {
                         alert(result.message);
-                        // Hapus elemen komentar dari DOM setelah berhasil dilepas
                         const elementToRemove = document.getElementById(`terhubung-${keluhanId}`);
                         if (elementToRemove) {
                             elementToRemove.remove();
                         }
-                        // Muat ulang (Opsional: untuk memperbarui daftar Komentar Belum Terhubung)
                         window.location.reload(); 
                     } else {
                         alert('Gagal melepaskan komentar: ' + (result.message || 'Terjadi kesalahan server.'));
@@ -76,7 +70,6 @@
                     console.error('Unassign Error:', e);
                     alert('Terjadi kesalahan jaringan atau server.');
                 } finally {
-                    // Kembalikan tombol jika gagal (tetapi kita reload jika berhasil)
                     buttonElement.disabled = false;
                     buttonElement.innerHTML = originalHtml;
                 }

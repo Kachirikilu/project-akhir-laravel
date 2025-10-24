@@ -17,17 +17,18 @@
                     :keluhanBelumSelesai="$keluhanBelumSelesai"
                     :keluhanSelesaiList="$keluhanSelesaiList"
                     :keluhanBelumSelesaiList="$keluhanBelumSelesaiList"
+                    :keluhanSayaBelumSelesaiList="$keluhanSayaBelumSelesaiList"
                     :keluhanDiproses="$keluhanDiproses"
                     :keluhanDiprosesList="$keluhanDiprosesList"
                 />
-                <x-telkominfra.maintenance.view
+                {{-- <x-telkominfra.maintenance.view
                     :perjalanans="$perjalanans ?? []"
                     :search="$search"
                     :searchMode="$searchMode"
                     :totalPerjalanan="$totalPerjalanan"
                     :perjalananSelesai="$perjalananSelesai"
                     :perjalananBelumSelesai="$perjalananBelumSelesai"
-                />
+                /> --}}
             @endif
 
             <x-home.welcome-home />

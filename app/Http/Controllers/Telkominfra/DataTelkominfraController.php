@@ -348,7 +348,7 @@ class DataTelkominfraController extends Controller
      * @param  int  $id ID dari DataPerjalanan yang akan dihapus.
      * @return \Illuminate\Http\Response
      */
-    public function DatadestroyPerjalanan($id)
+    public function destroyPerjalananData($id)
     {
         $dataPerjalanan = null;
         try {

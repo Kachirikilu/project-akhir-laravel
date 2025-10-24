@@ -9,41 +9,34 @@ use Carbon\Carbon;
 use App\Http\Controllers\Telkominfra\KeluhPenggunaController;
 use App\Http\Controllers\Telkominfra\ViewTelkominfraController;
 use Illuminate\Http\Request;
+use App\Models\User;
 
 
 class DashboardController extends Controller
 {
-    protected $today;
-    protected $nowTime;
-    protected $startOfWeek;
-    protected $endOfWeek;
-    protected $startOfNextWeek;
-    protected $endOfNextWeek;
-    protected $startOfLastWeek;
-    protected $endOfLastWeek;
-    protected $jadwalHariIni;
-    protected $jadwalBelumTerlaksanaCount;
-    protected $jadwalSudahTerlaksanaCount;
-    protected $totalJadwalCount;
-    protected $jadwalMingguIni;
-    protected $jadwalMingguDepan;
-    protected $jadwalMingguSelanjutnya;
-    protected $jadwalSudahTerlaksana;
+   protected $today, $nowTime, $startOfWeek, $endOfWeek, $startOfNextWeek, $endOfNextWeek,
+              $startOfLastWeek, $endOfLastWeek, $jadwalHariIni, $jadwalBelumTerlaksanaCount,
+              $jadwalSudahTerlaksanaCount, $totalJadwalCount, $jadwalMingguIni, $jadwalMingguDepan,
+              $jadwalMingguSelanjutnya, $jadwalSudahTerlaksana;
     // protected $iotCamera;
 
     public function __construct()
     {
+        // Memastikan data jadwal sudah diinisialisasi
         $this->jadwal();
     }
-
     public function jadwal()
     {
         $now = Carbon::now();
         $this->today = $now->toDateString();
         $this->nowTime = $now->toTimeString();
 
-        $this->startOfWeek = $now->startOfWeek()->format('Y-m-d');
-        $this->endOfWeek = $now->endOfWeek()->format('Y-m-d');
+        // Salin Carbon instance untuk manipulasi tanggal/minggu agar tidak saling mempengaruhi
+        $startOfWeekInstance = $now->copy()->startOfWeek();
+        $endOfWeekInstance = $now->copy()->endOfWeek();
+        
+        $this->startOfWeek = $startOfWeekInstance->format('Y-m-d');
+        $this->endOfWeek = $endOfWeekInstance->format('Y-m-d');
 
         $nextWeek = $now->copy()->addWeek();
         $this->startOfNextWeek = $nextWeek->startOfWeek()->format('Y-m-d');
@@ -53,7 +46,7 @@ class DashboardController extends Controller
         $this->startOfLastWeek = $lastWeek->startOfWeek()->format('Y-m-d');
         $this->endOfLastWeek = $lastWeek->endOfWeek()->format('Y-m-d');
 
-       $this->jadwalHariIni = JadwalCeramah::whereRaw("DATE(tanggal_ceramah) = ?", [$this->today])
+        $this->jadwalHariIni = JadwalCeramah::whereRaw("DATE(tanggal_ceramah) = ?", [$this->today])
             ->orderBy('jam_mulai')
             ->get();
 
@@ -93,13 +86,60 @@ class DashboardController extends Controller
 
     public function index(Request $request)
     {
+        // =======================================================
+        // 1. DATA KELUHAN (TIDAK BERUBAH)
+        // =======================================================
         $keluhController = new KeluhPenggunaController;
         $keluhData = $keluhController->keluh();
 
-        $perjalananController = new ViewTelkominfraController;
-        $perjalananData = $perjalananController->perjalanan($request);
+        // =======================================================
+        // 2. DATA PENGGUNA (BARU: LOGIKA FILTER USER/ADMIN)
+        // =======================================================
+        $search = $request->input('search');
+        $searchMode = $request->input('mode', ''); // Gunakan string kosong untuk 'all'
 
-        return view('dashboard', array_merge($keluhData, $perjalananData, [
+        $query = User::query();
+
+        // Filter berdasarkan Mode (Role)
+        if ($searchMode === 'admin') {
+            $query->where('admin', true);
+        } elseif ($searchMode === 'user') {
+            $query->where('admin', false);
+        }
+
+        // Filter berdasarkan Keyword Pencarian
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                ->orWhere('email', 'like', '%' . $search . '%');
+                if (is_numeric($search)) {
+                    $q->orWhere('id', $search);
+                }
+            });
+        }
+
+        // Hitung total untuk Badge Tab (diperlukan untuk tampilan Blade awal)
+        $totalUsers = User::count();
+        $totalAdmins = User::where('admin', true)->count();
+        $totalNormalUsers = User::where('admin', false)->count();
+
+        // Ambil data yang sudah difilter dan paginasi
+        $users = $query->latest()->paginate(10)->withQueryString(); 
+
+        // =======================================================
+        // 3. GABUNGKAN SEMUA DATA DAN KIRIM KE VIEW
+        // =======================================================
+        $userData = [
+            'users' => $users,
+            'totalUsers' => $totalUsers,
+            'totalAdmins' => $totalAdmins,
+            'totalNormalUsers' => $totalNormalUsers,
+            'search' => $search,
+            'searchMode' => $searchMode,
+        ];
+
+        // Ambil semua properti jadwal yang telah diinisialisasi di __construct/jadwal()
+        $jadwalData = [
             'jadwalBelumTerlaksanaCount' => $this->jadwalBelumTerlaksanaCount,
             'jadwalSudahTerlaksanaCount' => $this->jadwalSudahTerlaksanaCount,
             'totalJadwalCount' => $this->totalJadwalCount,
@@ -108,19 +148,111 @@ class DashboardController extends Controller
             'jadwalMingguSelanjutnya' => $this->jadwalMingguSelanjutnya,
             'jadwalSudahTerlaksana' => $this->jadwalSudahTerlaksana,
             'jadwalHariIni' => $this->jadwalHariIni,
-            // 'iotCamera' => $this->iotCamera
-        ]));
+            // 'iotCamera' => $this->iotCamera, // Tambahkan jika diaktifkan
+        ];
+
+        // Gunakan array_merge untuk menggabungkan data keluhan, data pengguna, dan data jadwal
+        return view('dashboard', array_merge(
+            $keluhData, 
+            $userData, 
+            $jadwalData
+        ));
     }
+
+    // =======================================================
+    // 4. METHOD AJAX SEARCH (Mengembalikan JSON)
+    // =======================================================
+    public function ajaxSearch(Request $request)
+    {
+        $search = $request->input('search');
+        $mode = $request->input('mode', ''); 
+        $page = $request->input('page', 1);
+
+        $query = User::query();
+
+        // Filter Mode
+        if ($mode === 'admin') {
+            $query->where('admin', true);
+        } elseif ($mode === 'user') {
+            $query->where('admin', false);
+        }
+
+        // Filter Search
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('email', 'like', '%' . $search . '%');
+                if (is_numeric($search)) {
+                    $q->orWhere('id', $search);
+                }
+            });
+        }
+        
+        // Ambil data dengan paginasi
+        $users = $query->latest()->paginate(10)->withQueryString(); 
+        
+        // Hitung total untuk Badge Tab
+        $totalUsers = User::count();
+        $totalAdmins = User::where('admin', true)->count();
+        $totalNormalUsers = User::where('admin', false)->count();
+
+        // Siapkan data untuk JSON
+        $paginationData = $users->toArray();
+        
+        // Kembalikan respons JSON
+        return response()->json([
+            'users' => $paginationData['data'], 
+            'pagination' => [
+                'links' => $users->linkCollection()->toArray(),
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+            ],
+            'counts' => [
+                'totalUsers' => $totalUsers,
+                'totalAdmins' => $totalAdmins,
+                'totalNormalUsers' => $totalNormalUsers,
+            ]
+        ]);
+    }
+
+    // =======================================================
+    // 5. METHOD DELETE USER (TIDAK BERUBAH)
+    // =======================================================
+    public function destroy(User $user)
+    {
+        // Pengecekan otorisasi (pastikan hanya admin yang bisa menghapus)
+        // Jika Anda menggunakan middleware 'admin', pengecekan ini mungkin redudan.
+        if (!auth()->check() || !auth()->user()->admin) {
+             // Respons untuk AJAX (jika request datang dari AJAX)
+             if (request()->ajax()) {
+                 return response()->json(['message' => 'Akses ditolak.'], 403);
+             }
+             abort(403, 'Akses ditolak.');
+        }
+
+        $user->delete();
+
+        // Jika request datang dari AJAX (dihapus via tombol JS)
+        if (request()->ajax()) {
+            return response()->json(['message' => 'Pengguna berhasil dihapus.'], 200);
+        }
+        
+        // Jika request datang dari form submit biasa
+        return back()->with('success', 'Pengguna berhasil dihapus.');
+    }
+
 
     public function user(Request $request)
     {
         $keluhController = new KeluhPenggunaController;
         $keluhData = $keluhController->keluh();
 
-        $perjalananController = new ViewTelkominfraController;
-        $perjalananData = $perjalananController->perjalanan($request);
+        // $perjalananController = new ViewTelkominfraController;
+        // $perjalananData = $perjalananController->perjalanan($request);
 
-        return view('user-interface', array_merge($keluhData, $perjalananData, [
+        return view('user-interface', array_merge($keluhData, 
+        // $perjalananData, 
+        [
             'jadwalBelumTerlaksanaCount' => $this->jadwalBelumTerlaksanaCount,
             'jadwalSudahTerlaksanaCount' => $this->jadwalSudahTerlaksanaCount,
             'totalJadwalCount' => $this->totalJadwalCount,

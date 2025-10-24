@@ -8,6 +8,7 @@ use App\Models\Perjalanan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 
 class KeluhPenggunaController extends Controller
@@ -44,6 +45,15 @@ class KeluhPenggunaController extends Controller
                 $query->where('selesai', true);
             })
             ->paginate(20, ['*'], 'page_complete');
+        
+        $userId = Auth::id();
+        $keluhanSayaBelumSelesaiList = collect(); 
+        if ($userId) {
+            $keluhanSayaBelumSelesaiList = KeluhPengguna::latest()
+                ->with(['user'])
+                ->where('user_id', $userId) 
+                ->paginate(20, ['*'], 'page_saya_belum');
+        }
 
         return [
             'totalKeluhan' => $totalKeluhan,
@@ -51,6 +61,7 @@ class KeluhPenggunaController extends Controller
             'keluhanDiproses' => $keluhanDiproses,
             'keluhanBelumSelesai' => $keluhanBelumSelesai,
             'keluhanBelumSelesaiList' => $keluhanBelumSelesaiList,
+            'keluhanSayaBelumSelesaiList' => $keluhanSayaBelumSelesaiList,
             'keluhanDiprosesList' => $keluhanDiprosesList,
             'keluhanSelesaiList' => $keluhanSelesaiList,
         ];
@@ -75,25 +86,19 @@ class KeluhPenggunaController extends Controller
     public function search(Request $request): JsonResponse
     {
         $search = $request->input('search');
-        $mode = $request->input('mode', 'pending'); // Default ke 'pending'
+        $mode = $request->input('mode', 'pending'); 
 
         if (empty($search)) {
-             // Jika kosong, kembalikan array kosong (frontend akan menampilkan pesan 'Tidak ditemukan')
              return response()->json([]);
         }
 
-        // Query dasar dengan relasi perjalanan
         $query = KeluhPengguna::query()->with('perjalanan');
-
-        // Filter berdasarkan mode
         switch ($mode) {
             case 'pending':
-                // Belum Ditindak: perjalanan_id IS NULL
                 $query->whereNull('perjalanan_id');
                 break;
             
             case 'processing':
-                // Sedang Diproses: punya perjalanan_id dan perjalanan.selesai = false
                 $query->whereNotNull('perjalanan_id')
                      ->whereHas('perjalanan', function ($q) {
                          $q->where('selesai', false);
@@ -101,18 +106,17 @@ class KeluhPenggunaController extends Controller
                 break;
             
             case 'complete':
-                // Sudah Selesai: punya perjalanan_id dan perjalanan.selesai = true
                 $query->whereHas('perjalanan', function ($q) {
                     $q->where('selesai', true);
                 });
                 break;
         }
 
-        // Tambahkan kondisi pencarian
         $keluhans = $query->where(function ($query) use ($search) {
                 $query->where('nama_pengguna', 'like', '%' . $search . '%')
                       ->orWhere('nama_tempat', 'like', '%' . $search . '%')
-                      ->orWhere('komentar', 'like', '%' . $search . '%');
+                      ->orWhere('komentar', 'like', '%' . $search . '%')
+                      ->orWhere('id', 'like', '%' . $search . '%');
             })
             ->orderBy('created_at', 'desc')
             ->get(); 
@@ -150,12 +154,12 @@ class KeluhPenggunaController extends Controller
 
             $validated['foto'] = $filename;
         }
-
+        
+        $validated['user_id'] = Auth::id(); 
         KeluhPengguna::create($validated);
 
         return redirect()->route('keluh_pengguna.index')->with('success', 'Keluhan berhasil ditambahkan.');
     }
-
 
     public function show($id)
     {

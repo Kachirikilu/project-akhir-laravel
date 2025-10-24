@@ -14,13 +14,20 @@
             <a class="hover:text-gray-900" href="/maintenance">Maintenance</a>
         @endif
         <a class="hover:text-gray-900" href="/#scroll-jadwal-sholat" id="scroll-ke-jadwal-sholat-3">Waktu Sholat</a>
-        <a class="hover:text-gray-900" href="/login">
-            @if (Auth::check())
-                Dashboard
-            @else
+        @auth
+            <form method="POST" action="{{ route('logout') }}" id="logout-form" x-data>
+                @csrf
+                <a href="#" class="hover:text-gray-900"
+                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    Logout
+                </a>
+            </form>
+        @else
+            <a class="hover:text-gray-900" href="/login">
                 Login
-            @endif
-        </a>
+            </a>
+        @endauth
+
     </nav>
 
     <div class="flex justify-center space-x-5">
@@ -48,6 +55,6 @@
         @elseif ($appName == 'PT. Telkominfra')
             PT. Telkomsel
         @endif
-        
+
     </p>
 </footer>

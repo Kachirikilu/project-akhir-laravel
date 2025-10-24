@@ -1,6 +1,6 @@
 <x-app-layout>
 
-    @if (Auth::check())
+    @if(Auth::user()?->admin)
         <x-admin.menu />
     @else
         <x-home.navbar />
@@ -16,7 +16,7 @@
         @elseif (request()->is('schedules/show/*'))
             <x-schedules.show :jadwalCeramah="$jadwalCeramah" />
         @elseif (request()->is('iot/all-data/*'))
-            @if (Auth::check())
+            @if(Auth::user()?->admin)
                 <div class="lg:mt-16">
             @else
                 <div class="mt-24 sm:mt-20 lg:mt-16">

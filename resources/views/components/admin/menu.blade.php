@@ -3,30 +3,37 @@
 @endphp
 
 <aside class="hidden lg:block bg-gray-700 text-white w-56 left-0 h-auto py-8 px-4 z-50">
-    <h2 class="text-2xl font-semibold mb-6 border-b border-gray-600 pb-2">Admin Panel</h2>
+    @if (Auth::user()?->admin)
+        <h2 class="text-2xl font-semibold mb-6 border-b border-gray-600 pb-2">Admin Panel</h2>
+    @else
+        <h2 class="text-2xl font-semibold mb-6 border-b border-gray-600 pb-2">User Panel</h2>
+    @endif
     <ul class="space-y-2">
         <li><a href="/" class="'hover:bg-gray-700' block py-2 px-4 rounded">Home</a></li>
 
-        <li><a href="/dashboard"
-                class="{{ request()->is('dashboard') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-700' }} block py-2 px-4 rounded">Dashboard</a>
-        </li>
-
-        @if ($appName == 'Al-Aqobah 1')
-            <li>
-                <a href="/schedules"
-                    class="group {{ request()->is('schedules*') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-700' }} block py-2 px-4 rounded">
-                    Schedules
-                    <span class="group-hover:opacity-30 transition-opacity duration-200">
-                        @if (request()->is('schedules/create'))
-                            | Create
-                        @elseif(request()->is('schedules/*/edit'))
-                            | Edit
-                        @elseif(request()->is('schedules/*'))
-                            | Show
-                        @endif
-                    </span>
-                </a>
+        @if (Auth::user()?->admin)
+            <li><a href="/dashboard"
+                    class="{{ request()->is('dashboard') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-700' }} block py-2 px-4 rounded">Dashboard</a>
             </li>
+
+            @if ($appName == 'Al-Aqobah 1')
+                <li>
+                    <a href="/schedules"
+                        class="group {{ request()->is('schedules*') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-700' }} block py-2 px-4 rounded">
+                        Schedules
+                        <span class="group-hover:opacity-30 transition-opacity duration-200">
+                            @if (request()->is('schedules/create'))
+                                | Create
+                            @elseif(request()->is('schedules/*/edit'))
+                                | Edit
+                            @elseif(request()->is('schedules/*'))
+                                | Show
+                            @endif
+                        </span>
+                    </a>
+                </li>
+            @endif
+
         @endif
 
 
@@ -88,28 +95,35 @@
 <div id="popup-menu"
     class="hidden fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-50 justify-center items-center">
     <div class="bg-white rounded-bl-md rounded-br-md shadow-xl p-6">
-        <h2 class="text-xl font-semibold mb-4">Admin Panel</h2>
+        @if (Auth::user()?->admin)
+            <h2 class="text-xl font-semibold mb-4">Admin Panel</h2>
+        @else
+            <h2 class="text-xl font-semibold mb-4">User Panel</h2>
+        @endif
         <nav>
             <ul class="space-y-2">
                 <li><a href="/" class="block py-2 px-4 hover:bg-gray-100 rounded">Home</a></li>
-                <li><a href="/dashboard"
-                        class="{{ request()->is('dashboard') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-100' }} block py-2 px-4 rounded">Dashboard</a>
-                </li>
-                @if ($appName == 'Al-Aqobah 1')
 
-                <li><a href="/schedules"
-                        class="group {{ request()->is('schedules*') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-100' }} block py-2 px-4 rounded">
-                        Schedules
-                        <span class="group-hover:opacity-30 transition-opacity duration-200">
-                            @if (request()->is('schedules/create'))
-                                | Create
-                            @elseif(request()->is('schedules/*/edit'))
-                                | Edit
-                            @elseif(request()->is('schedules/*'))
-                                | Show
-                            @endif
-                        </span>
-                    </a></li>
+                @if (Auth::user()?->admin)
+                    <li><a href="/dashboard"
+                            class="{{ request()->is('dashboard') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-100' }} block py-2 px-4 rounded">Dashboard</a>
+                    </li>
+                    @if ($appName == 'Al-Aqobah 1')
+
+                        <li><a href="/schedules"
+                            class="group {{ request()->is('schedules*') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-100' }} block py-2 px-4 rounded">
+                            Schedules
+                            <span class="group-hover:opacity-30 transition-opacity duration-200">
+                                @if (request()->is('schedules/create'))
+                                    | Create
+                                @elseif(request()->is('schedules/*/edit'))
+                                    | Edit
+                                @elseif(request()->is('schedules/*'))
+                                    | Show
+                                @endif
+                            </span>
+                        </a></li>
+                    @endif
                 @endif
                 @if ($appName == 'PT. Telkominfra')
 

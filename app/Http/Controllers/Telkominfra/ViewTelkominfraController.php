@@ -124,7 +124,8 @@ class ViewTelkominfraController extends Controller
             ->where(function ($query) use ($keyword) {
                 $query->where('nama_tempat', 'LIKE', "%{$keyword}%")
                     ->orWhere('komentar', 'LIKE', "%{$keyword}%")
-                    ->orWhere('nama_pengguna', 'LIKE', "%{$keyword}%");
+                    ->orWhere('nama_pengguna', 'LIKE', "%{$keyword}%")
+                    ->orWhere('id', 'LIKE', "%{$keyword}%");
             })
             ->limit(10)
             ->get(['id', 'nama_pengguna', 'nama_tempat', 'komentar', 'created_at']); 

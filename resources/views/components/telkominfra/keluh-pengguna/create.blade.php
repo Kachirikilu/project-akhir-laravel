@@ -6,7 +6,7 @@
 
         <div>
             <label class="block text-sm font-medium text-gray-700">Nama Pengguna</label>
-            <input type="text" name="nama_pengguna" required
+            <input type="text" name="nama_pengguna" value="{{ Auth::user()->name ?? 'Anonim' }}" required
                 class="mt-1 block w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
         </div>
 

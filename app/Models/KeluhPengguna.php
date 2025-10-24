@@ -17,6 +17,7 @@ class KeluhPengguna extends Model
      */
     protected $fillable = [
         'perjalanan_id',
+        'user_id',
         'nama_pengguna',
         'nama_tempat',
         'komentar',
@@ -26,8 +27,13 @@ class KeluhPengguna extends Model
     /**
      * Relasi ke tabel perjalanan (many-to-one).
      */
-    public function perjalanan(): BelongsTo
+    public function user()
     {
-        return $this->belongsTo(Perjalanan::class, 'perjalanan_id');
+        return $this->belongsTo(User::class); 
+    }
+
+    public function perjalanan()
+    {
+        return $this->belongsTo(Perjalanan::class); 
     }
 }

@@ -52,16 +52,29 @@
             </div>
             <div class="flex items-center">
                 <div class="hidden md:ml-4 md:flex md:items-center">
-                    @if (Auth::check())
-                        <a href="/dashboard"
-                            class="bg-indigo-600 px-4 py-2 rounded-md text-white text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            Dashboard
-                        @else
-                            <a href="/login"
+                    @auth
+                        {{-- Pengguna sudah login --}}
+                        @if (Auth::user()?->admin)
+                            <a href="/dashboard"
                                 class="bg-indigo-600 px-4 py-2 rounded-md text-white text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                Login
-                    @endif
-                    </a>
+                                Dashboard
+                            </a>
+                        @else
+                            {{-- Pengguna bukan Admin (Pengguna Biasa) --}}
+                            <a href="{{ route('profile.show') }}"
+                                class="bg-indigo-600 px-4 py-2 rounded-md text-white text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                {{ Auth::user()->name ?? 'Profil' }}
+                            </a>
+                        @endif
+                    @endauth
+
+                    @guest
+                        {{-- Pengguna belum login (Guest) --}}
+                        <a href="/login"
+                            class="bg-indigo-600 px-4 py-2 rounded-md text-white text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Login
+                        </a>
+                    @endguest
                 </div>
                 <div class="flex items-center md:hidden">
                     <button type="button"
@@ -119,14 +132,29 @@
         </div>
         <div class="pt-4 pb-3 border-t border-gray-200">
             <div class="flex items-center px-4">
-                <a href="/login"
-                    class="w-full bg-indigo-600 px-4 py-2 rounded-md text-white text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    @if (Auth::check())
-                        Dashboard
+                @auth
+                    {{-- Pengguna sudah login --}}
+                    @if (Auth::user()?->admin)
+                        <a href="/dashboard"
+                            class="w-full bg-indigo-600 px-4 py-2 rounded-md text-white text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Dashboard
+                        </a>
                     @else
-                        Login
+                        {{-- Pengguna bukan Admin (Pengguna Biasa) --}}
+                        <a href="{{ route('profile.show') }}"
+                            class="w-full bg-indigo-600 px-4 py-2 rounded-md text-white text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            {{ Auth::user()->name ?? 'Profil' }}
+                        </a>
                     @endif
-                </a>
+                @endauth
+
+                @guest
+                    {{-- Pengguna belum login (Guest) --}}
+                    <a href="/login"
+                        class="w-full bg-indigo-600 px-4 py-2 rounded-md text-white text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Login
+                    </a>
+                @endguest
             </div>
         </div>
     </div>

@@ -20,7 +20,7 @@ export default defineConfig({
         cors: {
             origin: [
                 'https://4m445w5p-8000.asse.devtunnels.ms',
-                'https://4m445w5p-5173.asse.devtunnels.ms',
+                'https://fxkkrc1l-5173.asse.devtunnels.ms',
                 // 'http://localhost:8000',
                 // 'http://localhost:5173',
                 // 'https://unpkg.com/leaflet/dist/leaflet.js',

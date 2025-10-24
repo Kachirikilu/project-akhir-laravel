@@ -1,16 +1,16 @@
 <x-app-layout>
 
-    @auth
+    {{-- @if(Auth::user()?->admin) --}}
         <x-admin.menu />
-    @else
+    {{-- @else
         <x-home.navbar />
-    @endauth
+    @endif --}}
 
-    @auth
+    {{-- @if(Auth::user()?->admin) --}}
         <div class="mx-auto flex-1 p-1 sm:p-3 md:p-6 lg:p-8 overflow-y-auto">
-    @else
+    {{-- @else
         <div class="mx-auto flex-1 pt-24 px-1 sm:px-18 md:px-24 lg:px-32 overflow-y-auto">
-    @endauth
+    @endif --}}
       
         <x-telkominfra.maintenance.view
             :perjalanans="$perjalanans ?? []"

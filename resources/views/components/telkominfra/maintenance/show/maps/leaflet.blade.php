@@ -97,7 +97,7 @@
         </div>
     </div>
 
-    @auth
+    @if(Auth::user()?->admin)
 
         @if ($mapsData)
             <div class="relative flex items-center my-6">
@@ -124,7 +124,7 @@
             </div>
         </div>
 
-    @endauth
+    @endif
 </div>
 
 

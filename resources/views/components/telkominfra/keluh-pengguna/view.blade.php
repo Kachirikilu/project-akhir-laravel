@@ -62,7 +62,102 @@
             </div>
         </div>
 
-        <hr class="my-6 border-gray-200">
+        @if (Auth::check() && !$keluhanSayaBelumSelesaiList->isEmpty())
+            <h3 class="text-xl font-bold text-yellow-700 mb-3">Komentar Saya (Belum)</h3>
+
+            <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                    ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                    Nama Pengguna</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                    Nama Tempat</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                    Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                    Komentar</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                    Tanggal</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                                    Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {{-- Ganti $keluhanBelumSelesaiList menjadi $keluhanSayaBelumSelesaiList --}}
+                            @foreach ($keluhanSayaBelumSelesaiList as $keluh)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                        {{ $keluh->id }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-700">
+                                        {{ $keluh->user->name ?? ($keluh->nama_pengguna ?? '-') }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-700">
+                                        {{ $keluh->nama_tempat ?? '-' }}</td>
+                                    <td class="px-6 py-4 text-sm">
+                                        @php
+                                            $status = 'Belum';
+                                            $class = 'bg-yellow-100 text-yellow-800';
+
+                                            if ($keluh->perjalanan_id) {
+                                                if ($keluh->perjalanan && $keluh->perjalanan->selesai) {
+                                                    $status = 'Selesai';
+                                                    $class = 'bg-green-100 text-green-800';
+                                                } else {
+                                                    $status = 'Diproses';
+                                                    $class = 'bg-blue-100 text-blue-800';
+                                                }
+                                            }
+                                        @endphp
+                                        <span
+                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $class }}">
+                                            {{ $status }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-700">
+                                        {{ $keluh->komentar ? (strlen($keluh->komentar) > 25 ? substr($keluh->komentar, 0, 25) . '...' : $keluh->komentar) : '-' }}
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-500">
+                                        {{ $keluh->created_at->format('d M Y') }}</td>
+                                    <td class="px-6 py-4 text-center">
+                                        <div class="flex items-center justify-center space-x-2">
+
+                                            <a href="{{ route('keluh_pengguna.show', $keluh->id) }}"
+                                                class="flex-1 text-center px-3 py-1.5 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase hover:bg-indigo-700 focus:ring focus:ring-indigo-300 transition duration-150">
+                                                Lihat
+                                            </a>
+
+                                            @auth
+                                                @if ($keluh->user_id == Auth::user()?->id || Auth::user()?->admin)
+                                                    <form action="{{ route('keluh_pengguna.destroy', $keluh->id) }}"
+                                                        method="POST" class="flex-1"
+                                                        onsubmit="return confirm('Yakin ingin menghapus keluhan ini?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                            class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-1.5 px-3 rounded text-xs uppercase transition duration-150">
+                                                            Hapus
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            @endauth
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="mt-4 p-4 pagination-container">
+                {{ $keluhanSayaBelumSelesaiList->links() }}
+            </div>
+        @endif
+
+        @if (!$keluhanBelumSelesaiList->isEmpty() && Auth::user()?->admin)
+        @endif
 
         {{-- ============================== PENCARIAN & TAB FILTER ============================== --}}
         <div class="mb-6 p-4 bg-white rounded-xl shadow-md border border-gray-100">
@@ -78,7 +173,7 @@
                 <div class="flex border-b mb-4 overflow-x-auto"> {{-- Tambahkan overflow-x-auto agar tab tidak menumpuk di layar kecil --}}
                     <button id="mode-pending" data-mode="pending"
                         class="tab-mode px-4 py-2 text-sm font-medium rounded-t-lg transition duration-150 border-b-2 border-indigo-500 text-indigo-700 whitespace-nowrap">
-                        <i class="fas fa-hourglass-half mr-2"></i> Belum Ditindak ({{ $keluhanBelumSelesai }})
+                        <i class="fas fa-hourglass-half mr-2"></i> Belum ({{ $keluhanBelumSelesai }})
                     </button>
                     <button id="mode-processing" data-mode="processing"
                         class="tab-mode px-4 py-2 text-sm font-medium rounded-t-lg transition duration-150 border-b-2 border-transparent text-gray-500 hover:text-indigo-700 whitespace-nowrap">
@@ -92,18 +187,18 @@
             </div>
 
             <script>
-            // Inisialisasi mode dan tab yang aktif saat halaman dimuat
-            document.addEventListener('DOMContentLoaded', function() {
-                const pendingTab = document.getElementById('mode-pending');
-                if (pendingTab) {
-                    pendingTab.click(); // Aktifkan tab Pending secara default
-                }
-            });
+                // Inisialisasi mode dan tab yang aktif saat halaman dimuat
+                document.addEventListener('DOMContentLoaded', function() {
+                    const pendingTab = document.getElementById('mode-pending');
+                    if (pendingTab) {
+                        pendingTab.click(); // Aktifkan tab Pending secara default
+                    }
+                });
             </script>
 
             <form id="search-form" class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-3">
                 <input type="text" id="search-input" name="search"
-                    placeholder="Cari Nama Pengguna, Tempat, atau Komentar dalam mode Belum Ditindak..."
+                    placeholder="Cari Nama Pengguna, Tempat, atau Komentar dalam mode Belum..."
                     class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm">
             </form>
         </div>
@@ -116,9 +211,9 @@
 
             <div id="default-results" class="space-y-6">
 
-                {{-- 1. Tabel BELUM DITINDAK (Not Default) - KONTEN INLINE --}}
+                {{-- 1. Tabel BELUM (Not Default) - KONTEN INLINE --}}
                 <div id="table-pending" class="table-content block">
-                    <h3 class="text-xl font-bold text-yellow-700 mb-3">Data Keluhan Belum Ditindak</h3>
+                    <h3 class="text-xl font-bold text-yellow-700 mb-3">Data Keluhan Belum</h3>
 
                     @if ($keluhanBelumSelesaiList->isEmpty())
                         <div class="bg-white shadow-lg rounded-lg overflow-hidden p-6 text-center text-gray-500">
@@ -136,11 +231,13 @@
                                                 Nama Pengguna</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                 Nama Tempat</th>
-                                           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                 Status</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                 Komentar</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                 Tanggal</th>
                                             <th
                                                 class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
@@ -158,7 +255,7 @@
                                                     {{ $keluh->nama_tempat ?? '-' }}</td>
                                                 <td class="px-6 py-4 text-sm">
                                                     @php
-                                                        $status = 'Belum Ditindak';
+                                                        $status = 'Belum';
                                                         $class = 'bg-yellow-100 text-yellow-800';
 
                                                         if ($keluh->perjalanan_id) {
@@ -177,7 +274,7 @@
                                                     </span>
                                                 </td>
                                                 <td class="px-6 py-4 text-sm text-gray-700">
-                                                    {{ $keluh->komentar ? (strlen($keluh->komentar) > 50 ? substr($keluh->komentar, 0, 50) . '...' : $keluh->komentar) : '-' }}
+                                                    {{ $keluh->komentar ? (strlen($keluh->komentar) > 25 ? substr($keluh->komentar, 0, 50) . '...' : $keluh->komentar) : '-' }}
                                                 </td>
                                                 <td class="px-6 py-4 text-sm text-gray-500">
                                                     {{ $keluh->created_at->format('d M Y') }}</td>
@@ -188,19 +285,20 @@
                                                             class="flex-1 text-center px-3 py-1.5 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase hover:bg-indigo-700 focus:ring focus:ring-indigo-300 transition duration-150">
                                                             Lihat
                                                         </a>
-
                                                         @auth
-                                                        <form
-                                                            action="{{ route('keluh_pengguna.destroy', $keluh->id) }}"
-                                                            method="POST" class="flex-1"
-                                                            onsubmit="return confirm('Yakin ingin menghapus keluhan ini?');">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit"
-                                                                class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-1.5 px-3 rounded text-xs uppercase transition duration-150">
-                                                                Hapus
-                                                            </button>
-                                                        </form>
+                                                            @if ($keluh->user_id == Auth::user()?->id || Auth::user()?->admin)
+                                                                <form
+                                                                    action="{{ route('keluh_pengguna.destroy', $keluh->id) }}"
+                                                                    method="POST" class="flex-1"
+                                                                    onsubmit="return confirm('Yakin ingin menghapus keluhan ini?');">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit"
+                                                                        class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-1.5 px-3 rounded text-xs uppercase transition duration-150">
+                                                                        Hapus
+                                                                    </button>
+                                                                </form>
+                                                            @endif
                                                         @endauth
                                                     </div>
                                                 </td>
@@ -217,7 +315,6 @@
                 </div>
 
                 {{-- 2. Tabel SEDANG DIPROSES (BARU & Default Active) - KONTEN INLINE --}}
-                {{-- KARENA ANDA INGIN SEDANG DIPROSES JADI DEFAULT, KITA BUAT table-processing JADI block, DAN table-pending JADI hidden --}}
                 <div id="table-processing" class="table-content hidden">
                     <h3 class="text-xl font-bold text-blue-700 mb-3">Data Keluhan Sedang Diproses</h3>
 
@@ -231,19 +328,26 @@
                                 <table class="min-w-full divide-y divide-gray-200">
                                     <thead class="bg-gray-50">
                                         <tr>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                 ID</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                 Nama Pengguna</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                 Nama Tempat</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                 Status</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                 Komentar</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                 Tanggal</th>
-                                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                                            <th
+                                                class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
                                                 Aksi</th>
                                         </tr>
                                     </thead>
@@ -268,7 +372,7 @@
                                                     </span>
                                                 </td>
                                                 <td class="px-6 py-4 text-sm text-gray-700">
-                                                    {{ $keluh->komentar ? (strlen($keluh->komentar) > 50 ? substr($keluh->komentar, 0, 50) . '...' : $keluh->komentar) : '-' }}
+                                                    {{ $keluh->komentar ? (strlen($keluh->komentar) > 25 ? substr($keluh->komentar, 0, 50) . '...' : $keluh->komentar) : '-' }}
                                                 </td>
                                                 <td class="px-6 py-4 text-sm text-gray-500">
                                                     {{ $keluh->created_at->format('d M Y') }}</td>
@@ -282,18 +386,21 @@
                                                             class="flex-1 text-center px-3 py-1.5 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase hover:bg-indigo-700 focus:ring focus:ring-indigo-300 transition duration-150">
                                                             Peta
                                                         </a>
-                                                        {{-- Form Hapus --}}
+
                                                         @auth
-                                                        <form
-                                                            action="{{ route('keluh_pengguna.destroy', $keluh->id) }}"
-                                                            method="POST" class="flex-1"
-                                                            onsubmit="return confirm('Yakin ingin menghapus keluhan ini?');">
-                                                            @csrf @method('DELETE')
-                                                            <button type="submit"
-                                                                class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-1.5 px-3 rounded text-xs uppercase transition duration-150">
-                                                                Hapus
-                                                            </button>
-                                                        </form>
+                                                            @if ($keluh->user_id == Auth::user()?->id || Auth::user()?->admin)
+                                                                <form
+                                                                    action="{{ route('keluh_pengguna.destroy', $keluh->id) }}"
+                                                                    method="POST" class="flex-1"
+                                                                    onsubmit="return confirm('Yakin ingin menghapus keluhan ini?');">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit"
+                                                                        class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-1.5 px-3 rounded text-xs uppercase transition duration-150">
+                                                                        Hapus
+                                                                    </button>
+                                                                </form>
+                                                            @endif
                                                         @endauth
                                                     </div>
                                                 </td>
@@ -365,7 +472,7 @@
                                                     </span>
                                                 </td>
                                                 <td class="px-6 py-4 text-sm text-gray-700">
-                                                    {{ $keluh->komentar ? (strlen($keluh->komentar) > 50 ? substr($keluh->komentar, 0, 50) . '...' : $keluh->komentar) : '-' }}
+                                                    {{ $keluh->komentar ? (strlen($keluh->komentar) > 25 ? substr($keluh->komentar, 0, 50) . '...' : $keluh->komentar) : '-' }}
                                                 </td>
                                                 <td class="px-6 py-4 text-sm text-gray-500">
                                                     {{ $keluh->created_at->format('d M Y') }}</td>
@@ -380,16 +487,19 @@
                                                             Peta
                                                         </a>
                                                         @auth
-                                                        <form action="{{ route('keluh_pengguna.destroy', $keluh->id) }}"
-                                                            method="POST" class="flex-1"
-                                                            onsubmit="return confirm('Yakin ingin menghapus keluhan ini?');">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit"
-                                                                class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-1.5 px-3 rounded text-xs uppercase transition duration-150">
-                                                                Hapus
-                                                            </button>
-                                                        </form>
+                                                            @if ($keluh->user_id == Auth::user()?->id || Auth::user()?->admin)
+                                                                <form
+                                                                    action="{{ route('keluh_pengguna.destroy', $keluh->id) }}"
+                                                                    method="POST" class="flex-1"
+                                                                    onsubmit="return confirm('Yakin ingin menghapus keluhan ini?');">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit"
+                                                                        class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-1.5 px-3 rounded text-xs uppercase transition duration-150">
+                                                                        Hapus
+                                                                    </button>
+                                                                </form>
+                                                            @endif
                                                         @endauth
                                                     </div>
                                                 </td>
@@ -432,7 +542,10 @@
             // State untuk mode pencarian: 'pending', 'processing', atau 'complete'
             let currentMode = 'pending';
             // Apakah user login? (untuk AJAX)
-            const isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
+            // const isAdmin = {{ auth()->check() ? Auth::user()?->admin : null }};
+            // const idUser = {{ auth()->check() ? Auth::user()?->id : null }};
+            const isAdmin = {{ auth()->check() ? json_encode(Auth::user()?->admin ?? false) : 'false' }};
+            const idUser = {{ auth()->check() ? json_encode(Auth::user()?->id) : 'null' }};
 
             // --- FUNGSI TABBING (MENGUBAH MODE) ---
             function switchMode(newMode) {
@@ -471,11 +584,9 @@
                     }
                 });
 
-                // Update placeholder search
-                // Update placeholder based on current mode
                 let placeholderText = 'Cari di daftar ';
                 if (newMode === 'pending') {
-                    placeholderText += 'Belum Ditindak';
+                    placeholderText += 'Belum';
                 } else if (newMode === 'processing') {
                     placeholderText += 'Sedang Diproses';
                 } else if (newMode === 'complete') {
@@ -484,25 +595,18 @@
                 input.placeholder = placeholderText + '...';
             }
 
-            // Event Listener untuk tombol tab
             tabButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     switchMode(button.dataset.mode);
                 });
             });
 
-            // Inisialisasi mode awal (panggil setelah fungsi didefinisikan)
-            // switchMode(currentMode); // Dihapus karena default HTML sudah diset ke incomplete
-
-            // Mencegah form submit tradisional
             form.addEventListener('submit', e => e.preventDefault());
 
-            // --- FUNGSI UTAMA PENCARIAN (AJAX) ---
             input.addEventListener('input', async function() {
                 const query = this.value.trim();
                 const url = `${searchUrl}?search=${encodeURIComponent(query)}&mode=${currentMode}`;
 
-                // KASUS 1: Query Kosong (RESET ke tampilan default mode saat ini)
                 if (query.length === 0) {
                     ajaxResultsContainer.innerHTML = '';
                     ajaxResultsContainer.style.display = 'none';
@@ -510,8 +614,7 @@
                     return;
                 }
 
-                // KASUS 2: Ada Query (Lakukan AJAX)
-                defaultResultsContainer.style.display = 'none'; // Sembunyikan kontainer default
+                defaultResultsContainer.style.display = 'none';
 
                 try {
                     const response = await fetch(url);
@@ -528,17 +631,16 @@
 
                     ajaxResultsContainer.style.display = 'block';
 
-                    // Cek apakah data kosong
                     if (data.length === 0) {
                         let modeName = '';
                         if (currentMode === 'pending') {
-                            modeName = 'Belum Ditindak';
+                            modeName = 'Belum';
                         } else if (currentMode === 'processing') {
                             modeName = 'Sedang Diproses';
                         } else if (currentMode === 'complete') {
                             modeName = 'Sudah Selesai';
                         }
-                        
+
                         ajaxResultsContainer.innerHTML = `
                      <div class="bg-white shadow-lg rounded-lg overflow-hidden p-6 text-center text-gray-500">
                           Tidak ada hasil keluhan ditemukan di mode ${currentMode === 'incomplete' ? 'Belum Selesai' : 'Sudah Selesai'}.
@@ -546,16 +648,15 @@
                         return;
                     }
 
-                    // --- Mulai Buat HTML Tabel AJAX ---
                     let modeName = '';
                     if (currentMode === 'pending') {
-                        modeName = 'Belum Ditindak';
+                        modeName = 'Belum';
                     } else if (currentMode === 'processing') {
                         modeName = 'Sedang Diproses';
                     } else if (currentMode === 'complete') {
                         modeName = 'Sudah Selesai';
                     }
-                    
+
                     let html = `
             <h3 class="text-xl font-bold text-indigo-700 mb-3">Hasil Pencarian di Mode ${modeName}</h3>
             <div class="bg-white shadow-lg rounded-lg overflow-hidden">
@@ -576,10 +677,8 @@
                         `;
 
                     data.forEach(item => {
-                        // Perlu data relasi perjalanan dari Controller
-                        // Logika 3 Status
-                        let statusText = 'Belum Ditindak';
-                        let statusClass = 'bg-yellow-100 text-yellow-800'; // Default: Pending
+                        let statusText = 'Belum';
+                        let statusClass = 'bg-yellow-100 text-yellow-800';
 
                         if (item.perjalanan_id !== null) {
                             if (item.perjalanan && item.perjalanan.selesai) {
@@ -587,7 +686,7 @@
                                 statusClass = 'bg-green-100 text-green-800';
                             } else {
                                 statusText = 'Diproses';
-                                statusClass = 'bg-blue-100 text-blue-800'; // Status baru
+                                statusClass = 'bg-blue-100 text-blue-800';
                             }
                         }
 
@@ -601,8 +700,8 @@
                         };
                         const formattedDate = new Date(item.created_at).toLocaleString('id-ID',
                             dateOptions);
-                        const shortKomentar = item.komentar ? (item.komentar.length > 50 ? item
-                            .komentar.substring(0, 50) + '...' : item.komentar) : '-';
+                        const shortKomentar = item.komentar ? (item.komentar.length > 25 ? item
+                            .komentar.substring(0, 25) + '...' : item.komentar) : '-';
 
                         html += `
                 <tr class="hover:bg-gray-50">
@@ -623,22 +722,22 @@
                                 Lihat
                             </a>
                             ${item.perjalanan_id ? `
-                            <a href="${mapUrlTemplate + item.perjalanan_id}"
-                                class="flex-1 text-center px-3 py-1.5 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase hover:bg-indigo-700 focus:ring focus:ring-indigo-300 transition duration-150">
-                                Peta
-                            </a>
-                            ` : ''}
-                            ${isAuthenticated ? `
-                            <form action="${deleteUrl}" method="POST" class="flex-1"
-                                onsubmit="return confirm('Yakin ingin menghapus keluhan ini?');">
-                                <input type="hidden" name="_token" value="${csrfToken}">
-                                <input type="hidden" name="_method" value="DELETE">
-                                <button type="submit"
-                                    class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-1.5 px-3 rounded text-xs uppercase transition duration-150">
-                                    Hapus
-                                </button>
-                            </form>
-                            ` : ''}
+                                                <a href="${mapUrlTemplate + item.perjalanan_id}"
+                                                    class="flex-1 text-center px-3 py-1.5 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase hover:bg-indigo-700 focus:ring focus:ring-indigo-300 transition duration-150">
+                                                    Peta
+                                                </a>
+                                                ` : ''}
+                            ${isAdmin || item.user_id == !idUser ? `
+                                                <form action="${deleteUrl}" method="POST" class="flex-1"
+                                                    onsubmit="return confirm('Yakin ingin menghapus keluhan ini?');">
+                                                    <input type="hidden" name="_token" value="${csrfToken}">
+                                                    <input type="hidden" name="_method" value="DELETE">
+                                                    <button type="submit"
+                                                        class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-1.5 px-3 rounded text-xs uppercase transition duration-150">
+                                                        Hapus
+                                                    </button>
+                                                </form>
+                                                ` : ''}
                         </div>
                     </td>
                 </tr>
