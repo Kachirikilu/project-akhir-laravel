@@ -10,8 +10,6 @@ use App\Jobs\MqttSubcriberJob;
 use App\Models\IoTCamera;
 
 
-
-
 class Camera extends Component
 {
     public $id_device;
@@ -23,8 +21,6 @@ class Camera extends Component
 
     public $iotCamera = [];
 
-
-
     public function mount()
     {
         $this->loadData();
@@ -32,7 +28,7 @@ class Camera extends Component
 
     public function loadData()
     {
-        MqttSubcriberJob::dispatch();
+        // MqttSubcriberJob::dispatch();
         $jd = cache()->get('esp32Cam');
         if ($jd) {
             $this->id_device = $jd['id_device'] ?? null;

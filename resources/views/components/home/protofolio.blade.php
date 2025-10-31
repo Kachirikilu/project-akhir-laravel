@@ -69,7 +69,6 @@
             Dengan teknologi andal, ia memastikan transmisi bandwidth tinggi serta ketersediaan layanan jaringan yang
             prima. Keberadaannya esensial untuk mendukung aktivitas digital, bisnis, dan memperkuat inklusi digital bagi
             seluruh masyarakat di wilayah operasionalnya.
-            masyarakat di lingkungannya.
         </p>
         <div class="flex col-span-1 gap-4">
             <a  href="/keluh-pengguna/create"

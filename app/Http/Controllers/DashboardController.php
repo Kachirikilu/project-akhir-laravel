@@ -159,9 +159,6 @@ class DashboardController extends Controller
         ));
     }
 
-    // =======================================================
-    // 4. METHOD AJAX SEARCH (Mengembalikan JSON)
-    // =======================================================
     public function ajaxSearch(Request $request)
     {
         $search = $request->input('search');
@@ -170,14 +167,11 @@ class DashboardController extends Controller
 
         $query = User::query();
 
-        // Filter Mode
         if ($mode === 'admin') {
             $query->where('admin', true);
         } elseif ($mode === 'user') {
             $query->where('admin', false);
         }
-
-        // Filter Search
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', '%' . $search . '%')
@@ -187,19 +181,14 @@ class DashboardController extends Controller
                 }
             });
         }
-        
-        // Ambil data dengan paginasi
         $users = $query->latest()->paginate(10)->withQueryString(); 
         
-        // Hitung total untuk Badge Tab
         $totalUsers = User::count();
         $totalAdmins = User::where('admin', true)->count();
         $totalNormalUsers = User::where('admin', false)->count();
 
-        // Siapkan data untuk JSON
         $paginationData = $users->toArray();
         
-        // Kembalikan respons JSON
         return response()->json([
             'users' => $paginationData['data'], 
             'pagination' => [
@@ -215,15 +204,9 @@ class DashboardController extends Controller
         ]);
     }
 
-    // =======================================================
-    // 5. METHOD DELETE USER (TIDAK BERUBAH)
-    // =======================================================
     public function destroy(User $user)
     {
-        // Pengecekan otorisasi (pastikan hanya admin yang bisa menghapus)
-        // Jika Anda menggunakan middleware 'admin', pengecekan ini mungkin redudan.
         if (!auth()->check() || !auth()->user()->admin) {
-             // Respons untuk AJAX (jika request datang dari AJAX)
              if (request()->ajax()) {
                  return response()->json(['message' => 'Akses ditolak.'], 403);
              }
@@ -231,13 +214,9 @@ class DashboardController extends Controller
         }
 
         $user->delete();
-
-        // Jika request datang dari AJAX (dihapus via tombol JS)
         if (request()->ajax()) {
             return response()->json(['message' => 'Pengguna berhasil dihapus.'], 200);
         }
-        
-        // Jika request datang dari form submit biasa
         return back()->with('success', 'Pengguna berhasil dihapus.');
     }
 

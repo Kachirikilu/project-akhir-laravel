@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot()
+    public function boot(): void
     {
         if (env('APP_URL')) {
             URL::forceRootUrl(env('APP_URL'));
@@ -28,12 +28,14 @@ class AppServiceProvider extends ServiceProvider
         if (env('APP_ENV') !== 'local') {
             URL::forceScheme('https');
         }
+    //    MqttSubcriberJob::dispatch();
+
         // if (env('APP_ENV') !== 'local' && !env('DEVTUNNEL')) {
         //     URL::forceScheme('https');
         // }
     }
     // public function boot(): void
     // {
-    //     // MqttSubcriberJob::dispatch();
+    //    MqttSubcriberJob::dispatch();
     // }
 }

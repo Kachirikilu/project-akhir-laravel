@@ -70,12 +70,21 @@ public function index(Request $request)
      */
     public function ajaxSearch(Request $request)
     {
-        // Mendapatkan nilai pencarian dari request
-        $search = $request->input('search');
+        // Ambil parameter dari request
+        $search = trim($request->input('search'));
+        $mode = $request->input('mode'); // tambahkan kalau JS kirim mode
         $query = Perjalanan::query();
 
-        if ($search) {
-            // Logika untuk mencoba mengurai input sebagai tanggal
+        // 🔹 Filter berdasarkan mode (jika ada)
+        if ($mode === 'pending') {
+            $query->where('selesai', false);
+        } elseif ($mode === 'complete') {
+            $query->where('selesai', true);
+        }
+
+        // 🔹 Filter berdasarkan pencarian
+        if (!empty($search)) {
+            // Coba parsing tanggal
             $parsedDate = null;
             try {
                 $parsedDate = Carbon::parse($search);
@@ -83,12 +92,11 @@ public function index(Request $request)
                 $parsedDate = null;
             }
 
-            // Menerapkan filter pencarian (logika sama seperti index)
             $query->where(function ($q) use ($search, $parsedDate) {
                 $q->where('id', 'like', "%{$search}%")
-                    ->orWhere('id_perjalanan', 'like', "%{$search}%")
-                    ->orWhere('nama_pengguna', 'like', "%{$search}%")
-                    ->orWhere('nama_tempat', 'like', "%{$search}%");
+                ->orWhere('id_perjalanan', 'like', "%{$search}%")
+                ->orWhere('nama_pengguna', 'like', "%{$search}%")
+                ->orWhere('nama_tempat', 'like', "%{$search}%");
 
                 if ($parsedDate) {
                     $q->orWhereBetween('created_at', [
@@ -99,13 +107,20 @@ public function index(Request $request)
             });
         }
 
-        // Mengambil 10 data terbaru tanpa paginasi (untuk AJAX)
-        $perjalanans = $query->orderBy('created_at', 'desc')->take(10)->get([
-            // Hanya ambil kolom yang benar-benar dibutuhkan oleh AJAX script Anda
-            'id', 'id_perjalanan', 'nama_tempat', 'nama_pengguna', 'created_at'
-        ]);
+        // 🔹 Ambil data maksimal 10 terakhir
+        $perjalanans = $query
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get([
+                'id',
+                'id_perjalanan',
+                'nama_tempat',
+                'nama_pengguna',
+                'created_at',
+                'selesai' // tambahkan ini agar JS bisa tampilkan badge status
+            ]);
 
-        // Mengembalikan data sebagai JSON (INI KRUSIAL)
+        // 🔹 Pastikan respons JSON valid
         return response()->json($perjalanans);
     }
 

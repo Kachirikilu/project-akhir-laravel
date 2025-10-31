@@ -30,7 +30,7 @@
             :searchMode="$searchMode"
         />
         {{-- <x-mqtt.camera /> --}}
-        {{-- @livewire('data-device.camera') --}}
+        @livewire('data-device.camera')
 
         @if ($appName == 'Al-Aqobah 1')
             <x-home.galery-home />

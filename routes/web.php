@@ -66,6 +66,7 @@ if ($appName == 'PT. Telkominfra') {
     Route::prefix('perjalanan')->group(function () {
         Route::get('/search', [ViewTelkominfraController::class, 'ajaxSearch'])->name('perjalanan.ajaxSearch');
         Route::post('/perjalanan', [DataTelkominfraController::class, 'store'])->name('perjalanan.store'); 
+
         
         Route::middleware('is_admin')->group(function () {
             Route::put('/{id}', [DataTelkominfraController::class, 'update'])->name('perjalanan.update');
