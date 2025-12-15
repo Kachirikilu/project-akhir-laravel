@@ -61,9 +61,13 @@
                 </a></li>
         @endif
 
-        <li><a href="{{ route('profile.show') }}"
-                class="{{ request()->is('user/profile') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-700' }} block py-2 px-4 rounded">{{ Auth::user()->name ?? 'Pengunjung' }}</a>
+        <li>
+            <a href="{{ route('profile.show') }}"
+                class="{{ request()->is('user/profile') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-700' }} block py-2 px-4 rounded">
+                {{ Auth::user()->admin->name ?? (Auth::user()->dosen->name ?? (Auth::user()->mahasiswa->name ?? 'Pengunjung')) }}
+            </a>
         </li>
+
         <li>
             <form method="POST" action="{{ route('logout') }}" x-data>
                 @csrf
@@ -111,18 +115,18 @@
                     @if ($appName == 'Al-Aqobah 1')
 
                         <li><a href="/schedules"
-                            class="group {{ request()->is('schedules*') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-100' }} block py-2 px-4 rounded">
-                            Schedules
-                            <span class="group-hover:opacity-30 transition-opacity duration-200">
-                                @if (request()->is('schedules/create'))
-                                    | Create
-                                @elseif(request()->is('schedules/*/edit'))
-                                    | Edit
-                                @elseif(request()->is('schedules/*'))
-                                    | Show
-                                @endif
-                            </span>
-                        </a></li>
+                                class="group {{ request()->is('schedules*') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-100' }} block py-2 px-4 rounded">
+                                Schedules
+                                <span class="group-hover:opacity-30 transition-opacity duration-200">
+                                    @if (request()->is('schedules/create'))
+                                        | Create
+                                    @elseif(request()->is('schedules/*/edit'))
+                                        | Edit
+                                    @elseif(request()->is('schedules/*'))
+                                        | Show
+                                    @endif
+                                </span>
+                            </a></li>
                     @endif
                 @endif
                 @if ($appName == 'PT. Telkominfra')
@@ -148,9 +152,13 @@
                             </span>
                         </a></li>
                 @endif
-                <li><a href="{{ route('profile.show') }}"
-                        class="{{ request()->is('user/profile') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-100' }} block py-2 px-4 rounded">{{ Auth::user()->name ?? 'Pengunjung' }}</a>
+                <li>
+                    <a href="{{ route('profile.show') }}"
+                        class="{{ request()->is('user/profile') ? 'bg-blue-500 text-white hover:bg-blue-600' : 'hover:bg-gray-100' }} block py-2 px-4 rounded">
+                        {{ Auth::user()->admin->name ?? (Auth::user()->dosen->name ?? (Auth::user()->mahasiswa->name ?? 'Pengunjung')) }}
+                    </a>
                 </li>
+
                 <li>
                     <form method="POST" action="{{ route('logout') }}" x-data>
                         @csrf
@@ -189,4 +197,9 @@
             }
         });
     }
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 1024) {
+            popupMenu.classList.add('hidden');
+        }
+    });
 </script>

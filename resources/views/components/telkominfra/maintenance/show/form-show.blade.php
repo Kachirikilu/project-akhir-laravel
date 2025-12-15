@@ -14,7 +14,10 @@
             @csrf
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <input type="hidden" name="nama_pengguna" value="{{ Auth::user()->name ?? 'User Default' }}">
+                <input type="hidden" name="nama_pengguna"
+                    value="{{ Auth::user()->admin->name ?? (Auth::user()->dosen->name ?? (Auth::user()->mahasiswa->name ?? 'User Default')) }}">
+
+
                 <input type="hidden" name="nama_tempat"
                     value="{{ $perjalananDetail->nama_tempat ?? 'Lokasi Default' }}">
 

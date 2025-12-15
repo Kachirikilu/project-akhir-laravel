@@ -7,6 +7,9 @@
 
     <div class="max-w-[1080px] mx-auto flex-1 p-1 sm:p-3 md:p-6 lg:p-8 overflow-y-auto">
 
+        @livewire('user-management')
+        @livewire('prodi-management')
+
         {{-- <x-telkominfra.keluh-pengguna.view 
              :totalKeluhan="$totalKeluhan"
              :keluhanSelesai="$keluhanSelesai"
@@ -17,20 +20,21 @@
              :keluhanDiproses="$keluhanDiproses"
              :keluhanDiprosesList="$keluhanDiprosesList"
          /> --}}
+         
 
         <x-home.welcome-home />
         <x-home.info-home :jadwalHariIni="$jadwalHariIni" :jadwalBelumTerlaksanaCount="$jadwalBelumTerlaksanaCount" :jadwalSudahTerlaksanaCount="$jadwalSudahTerlaksanaCount" :totalJadwalCount="$totalJadwalCount" />
 
-        <x-admin.user
+        {{-- <x-admin.user
             :users="$users" 
             :totalUsers="$totalUsers"
             :totalAdmins="$totalAdmins"
             :totalNormalUsers="$totalNormalUsers"
             :search="$search"
             :searchMode="$searchMode"
-        />
+        /> --}}
         {{-- <x-mqtt.camera /> --}}
-        @livewire('data-device.camera')
+        {{-- @livewire('data-device.camera') --}}
 
         @if ($appName == 'Al-Aqobah 1')
             <x-home.galery-home />

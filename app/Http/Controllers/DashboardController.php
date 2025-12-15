@@ -14,7 +14,7 @@ use App\Models\User;
 
 class DashboardController extends Controller
 {
-   protected $today, $nowTime, $startOfWeek, $endOfWeek, $startOfNextWeek, $endOfNextWeek,
+    protected $today, $nowTime, $startOfWeek, $endOfWeek, $startOfNextWeek, $endOfNextWeek,
               $startOfLastWeek, $endOfLastWeek, $jadwalHariIni, $jadwalBelumTerlaksanaCount,
               $jadwalSudahTerlaksanaCount, $totalJadwalCount, $jadwalMingguIni, $jadwalMingguDepan,
               $jadwalMingguSelanjutnya, $jadwalSudahTerlaksana;
@@ -93,18 +93,25 @@ class DashboardController extends Controller
         $keluhData = $keluhController->keluh();
 
         // =======================================================
-        // 2. DATA PENGGUNA (BARU: LOGIKA FILTER USER/ADMIN)
+        // 2. DATA PENGGUNA (BARU: LOGIKA FILTER ROLE MENGGUNAKAN whereHas)
         // =======================================================
         $search = $request->input('search');
         $searchMode = $request->input('mode', ''); // Gunakan string kosong untuk 'all'
 
         $query = User::query();
 
-        // Filter berdasarkan Mode (Role)
+        // Filter berdasarkan Mode (Role) - MENGGUNAKAN RELASI
         if ($searchMode === 'admin') {
-            $query->where('admin', true);
+            $query->whereHas('admin'); // Cek relasi ke tabel 'admins'
+        } elseif ($searchMode === 'dosen') { // Tambahkan filter Dosen
+            $query->whereHas('dosen');
+        } elseif ($searchMode === 'mahasiswa') { // Tambahkan filter Mahasiswa
+            $query->whereHas('mahasiswa');
         } elseif ($searchMode === 'user') {
-            $query->where('admin', false);
+            // User Biasa: Tidak memiliki relasi admin, dosen, MAHASISWA
+            $query->whereDoesntHave('admin')
+                  ->whereDoesntHave('dosen')
+                  ->whereDoesntHave('mahasiswa');
         }
 
         // Filter berdasarkan Keyword Pencarian
@@ -118,10 +125,17 @@ class DashboardController extends Controller
             });
         }
 
-        // Hitung total untuk Badge Tab (diperlukan untuk tampilan Blade awal)
+        // Hitung total untuk Badge Tab - MENGGUNAKAN RELASI
         $totalUsers = User::count();
-        $totalAdmins = User::where('admin', true)->count();
-        $totalNormalUsers = User::where('admin', false)->count();
+        $totalAdmins = User::whereHas('admin')->count(); // Diperbaiki
+        $totalDosens = User::whereHas('dosen')->count(); // Baru
+        $totalMahasiswas = User::whereHas('mahasiswa')->count(); // Baru
+        
+        // Total Normal User: Pengguna yang TIDAK memiliki relasi Admin, Dosen, atau Mahasiswa
+        $totalNormalUsers = User::whereDoesntHave('admin')
+                                 ->whereDoesntHave('dosen')
+                                 ->whereDoesntHave('mahasiswa')
+                                 ->count(); // Diperbaiki
 
         // Ambil data yang sudah difilter dan paginasi
         $users = $query->latest()->paginate(10)->withQueryString(); 
@@ -133,6 +147,8 @@ class DashboardController extends Controller
             'users' => $users,
             'totalUsers' => $totalUsers,
             'totalAdmins' => $totalAdmins,
+            'totalDosens' => $totalDosens, // Tambah
+            'totalMahasiswas' => $totalMahasiswas, // Tambah
             'totalNormalUsers' => $totalNormalUsers,
             'search' => $search,
             'searchMode' => $searchMode,
@@ -162,50 +178,92 @@ class DashboardController extends Controller
     public function ajaxSearch(Request $request)
     {
         $search = $request->input('search');
-        $mode = $request->input('mode', ''); 
+        $mode = $request->input('mode', '');
         $page = $request->input('page', 1);
 
-        $query = User::query();
+        $query = User::query()->with(['admin', 'dosen', 'mahasiswa']);
 
+        // Filter berdasarkan role
         if ($mode === 'admin') {
-            $query->where('admin', true);
+            $query->whereHas('admin');
+        } elseif ($mode === 'dosen') {
+            $query->whereHas('dosen');
+        } elseif ($mode === 'mahasiswa') {
+            $query->whereHas('mahasiswa');
         } elseif ($mode === 'user') {
-            $query->where('admin', false);
+            $query->whereDoesntHave('admin')
+                  ->whereDoesntHave('dosen')
+                  ->whereDoesntHave('mahasiswa');
         }
+
+        // Filter pencarian
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('email', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('email', 'like', '%' . $search . '%')
+                  ->orWhereHas('admin', fn($sub) => $sub->where('name', 'like', '%' . $search . '%'))
+                  ->orWhereHas('dosen', fn($sub) => $sub->where('name', 'like', '%' . $search . '%'))
+                  ->orWhereHas('mahasiswa', fn($sub) => $sub->where('name', 'like', '%' . $search . '%'));
+
                 if (is_numeric($search)) {
                     $q->orWhere('id', $search);
                 }
             });
         }
-        $users = $query->latest()->paginate(10)->withQueryString(); 
-        
-        $totalUsers = User::count();
-        $totalAdmins = User::where('admin', true)->count();
-        $totalNormalUsers = User::where('admin', false)->count();
 
-        $paginationData = $users->toArray();
-        
+        // Ambil data + paginasi
+        $users = $query->latest()->paginate(10)->withQueryString();
+
+        // Buat struktur data dengan "name" dari relasi
+        $mappedUsers = $users->map(function ($user) {
+            $role = 'User';
+            $name = $user->email;
+
+            if ($user->admin) {
+                $role = 'Admin';
+                $name = $user->admin->name;
+            } elseif ($user->dosen) {
+                $role = 'Dosen';
+                $name = $user->dosen->name;
+            } elseif ($user->mahasiswa) {
+                $role = 'Mahasiswa';
+                $name = $user->mahasiswa->name;
+            }
+
+            return [
+                'id' => $user->id,
+                'name' => $name,
+                'email' => $user->email,
+                'role' => $role,
+                'created_at' => $user->created_at->format('d M Y H:i'),
+            ];
+        });
+
+        // Hitung total
+        $counts = [
+            'totalUsers' => User::count(),
+            'totalAdmins' => User::whereHas('admin')->count(),
+            'totalDosen' => User::whereHas('dosen')->count(),
+            'totalMahasiswa' => User::whereHas('mahasiswa')->count(),
+            'totalNormalUsers' => User::whereDoesntHave('admin')
+                ->whereDoesntHave('dosen')
+                ->whereDoesntHave('mahasiswa')
+                ->count(),
+        ];
+
         return response()->json([
-            'users' => $paginationData['data'], 
-            'pagination' => [
+            'users' => [
+                'data' => $mappedUsers,
                 'links' => $users->linkCollection()->toArray(),
                 'current_page' => $users->currentPage(),
                 'last_page' => $users->lastPage(),
             ],
-            'counts' => [
-                'totalUsers' => $totalUsers,
-                'totalAdmins' => $totalAdmins,
-                'totalNormalUsers' => $totalNormalUsers,
-            ]
+            'counts' => $counts
         ]);
     }
 
     public function destroy(User $user)
     {
+        // Perbaikan: Gunakan relasi admin() untuk otorisasi
         if (!auth()->check() || !auth()->user()->admin) {
              if (request()->ajax()) {
                  return response()->json(['message' => 'Akses ditolak.'], 403);

@@ -1,6 +1,6 @@
 <div class="mb-6 border p-6 rounded-xl bg-white shadow-lg">
     <h4 class="text-xl font-extrabold mb-4 text-indigo-700 border-b pb-2">
-        <i class="fas fa-edit mr-2"></i> Edit Detail Sesi Perjalanan
+        <i class="fas fa-edit mr-2"></i>Edit Detail Sesi Perjalanan
     </h4>
 
     <form action="{{ route('perjalanan.update', $perjalananDetail->id) }}" method="POST">
@@ -13,7 +13,8 @@
                 <label for="nama_pengguna" class="block text-sm font-medium text-gray-700">Nama Pengguna:</label>
                 <input type="text" id="nama_pengguna" name="nama_pengguna" required
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                    value="{{ old('nama_pengguna', $perjalananDetail->nama_pengguna ?? (Auth::user()->name ?? 'User Default')) }}">
+                    value="{{ old('nama_pengguna', $perjalananDetail->nama_pengguna ?? (Auth::user()->admin->name ?? (Auth::user()->dosen->name ?? (Auth::user()->mahasiswa->name ?? 'User Default')))) }}">
+
             </div>
 
             <div>
@@ -34,14 +35,14 @@
         </div>
 
         @if ($errors->any())
-            @endif
+        @endif
 
         <button type="submit"
             class="inline-flex items-center px-4 py-2 bg-orange-400 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-orange-500 active:bg-orange-500 focus:outline-none focus:border-orange-900 focus:ring focus:ring-orange-300 disabled:opacity-25 transition ease-in-out duration-150 mr-2">
             Simpan Perubahan Detail
         </button>
     </form>
-    
+
     <hr class="my-6 border-gray-200">
 
     <div class="flex items-center justify-between">
@@ -50,16 +51,16 @@
         <form action="{{ route('perjalanan.update', $perjalananDetail->id) }}" method="POST"
             onsubmit="return confirm('Apakah Anda yakin ingin menandai perjalanan ini sebagai {{ $perjalananDetail->selesai ? 'BELUM' : 'SUDAH' }} Selesai?');">
             @csrf
-            @method('PATCH') 
-            
+            @method('PATCH')
+
             <input type="hidden" name="selesai" value="{{ $perjalananDetail->selesai ? '0' : '1' }}">
 
             <button type="submit"
                 class="inline-flex items-center px-4 py-2 rounded-md font-semibold text-sm transition ease-in-out duration-150 shadow-md
-                {{ $perjalananDetail->selesai 
-                    ? 'bg-red-500 hover:bg-red-600 text-white' 
+                {{ $perjalananDetail->selesai
+                    ? 'bg-red-500 hover:bg-red-600 text-white'
                     : 'bg-green-600 hover:bg-green-700 text-white' }}">
-                
+
                 @if ($perjalananDetail->selesai)
                     <i class="fas fa-undo mr-2"></i> Batalkan Selesai
                 @else
@@ -68,9 +69,10 @@
             </button>
         </form>
     </div>
-    
+
     <p class="mt-2 text-sm {{ $perjalananDetail->selesai ? 'text-green-600' : 'text-yellow-600' }} font-bold">
-        Status Saat Ini: {{ $perjalananDetail->selesai ? 'Selesai (Maintenance Berhasil)' : 'Belum Selesai (Perlu Maintenance)' }}
+        Status Saat Ini:
+        {{ $perjalananDetail->selesai ? 'Selesai (Maintenance Berhasil)' : 'Belum Selesai (Perlu Maintenance)' }}
     </p>
 
 </div>

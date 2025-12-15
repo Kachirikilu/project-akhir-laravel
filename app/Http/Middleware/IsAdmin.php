@@ -16,16 +16,20 @@ class IsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Pastikan pengguna sudah login DAN memiliki kolom 'admin' bernilai true
-        if (Auth::check() && Auth::user()->admin) {
-            return $next($request);
-        }
+        // Pastikan pengguna sudah login.
+        if (Auth::check()) {
+            $user = Auth::user();
 
-        // Jika bukan admin, arahkan pengguna ke home biasa atau halaman home
-        // Atau Anda bisa mengembalikan response 403 Forbidden
-        return redirect('/')->with('error', 'Anda tidak memiliki akses sebagai Admin.');
+            // Cek apakah user memiliki kaitan dengan tabel 'admins'
+            // Akses properti 'admin' akan memicu relasi admin() di Model User.
+            // Jika relasi ditemukan, ia mengembalikan objek Admin (dianggap true).
+            // Jika relasi tidak ditemukan, ia mengembalikan null (dianggap false).
+            if ($user->admin) {
+                return $next($request);
+            }
+        }
         
-        // Alternatif untuk Error 403
-        // abort(403, 'Akses Dilarang.');
+        // Jika bukan admin (atau tidak login), arahkan pengguna ke home
+        return redirect('/')->with('error', 'Anda tidak memiliki akses sebagai Admin.');
     }
 }

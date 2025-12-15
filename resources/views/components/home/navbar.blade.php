@@ -57,13 +57,14 @@
                         @if (Auth::user()?->admin)
                             <a href="/dashboard"
                                 class="bg-indigo-600 px-4 py-2 rounded-md text-white text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                Dashboard
+                                Dashboards
                             </a>
                         @else
                             {{-- Pengguna bukan Admin (Pengguna Biasa) --}}
                             <a href="{{ route('profile.show') }}"
                                 class="bg-indigo-600 px-4 py-2 rounded-md text-white text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                {{ Auth::user()->name ?? 'Profil' }}
+                                {{ Auth::user()->admin->name ?? (Auth::user()->dosen->name ?? (Auth::user()->mahasiswa->name ?? 'Profil')) }}
+
                             </a>
                         @endif
                     @endauth
@@ -143,7 +144,8 @@
                         {{-- Pengguna bukan Admin (Pengguna Biasa) --}}
                         <a href="{{ route('profile.show') }}"
                             class="w-full bg-indigo-600 px-4 py-2 rounded-md text-white text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            {{ Auth::user()->name ?? 'Profil' }}
+                            {{ Auth::user()->admin->name ?? (Auth::user()->dosen->name ?? (Auth::user()->mahasiswa->name ?? 'Profil')) }}
+
                         </a>
                     @endif
                 @endauth

@@ -10,7 +10,7 @@
 <div class="bg-white shadow-xl sm:rounded-lg p-6">
     <h3 class="text-lg font-semibold mb-4">Daftar Sesi Drive Test</h3>
 
-    @if(Auth::user()?->admin)
+    @if (Auth::user()?->admin)
         {{-- ========== FORM UPLOAD DATA BARU ========== --}}
         <div class="mb-6 border p-4 rounded-lg bg-gray-50">
             <h4 class="text-md font-bold mb-3">Unggah Data Perjalanan (NMF) Baru</h4>
@@ -29,10 +29,14 @@
                     </div>
 
                     <div>
-                        <label for="nama_pengguna" class="block text-sm font-medium text-gray-700">Nama Pengguna:</label>
+                        <label for="nama_pengguna" class="block text-sm font-medium text-gray-700">Nama
+                            Pengguna:</label>
                         <input type="text" id="nama_pengguna" name="nama_pengguna" required
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                            value="{{ Auth::user()->name ?? 'User Default' }}">
+                            value="{{ Auth::user()->admin->name ?? Auth::user()->dosen->name ?? Auth::user()->mahasiswa->name ?? 'User Default' }}">
+
+
+
                     </div>
 
                     <div>
@@ -187,8 +191,9 @@
                                             Pengguna</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                             Waktu Unggah</th>
-                                        @if(Auth::user()?->admin)
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        @if (Auth::user()?->admin)
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                 Hapus</th>
                                         @endif
                                     </tr>
@@ -224,7 +229,7 @@
                                                 {{ $perjalanan->nama_pengguna }}</td>
                                             <td class="px-6 py-4 text-sm text-gray-500">
                                                 {{ $perjalanan->created_at->format('d M Y H:i') }}</td>
-                                            @if(Auth::user()?->admin)
+                                            @if (Auth::user()?->admin)
                                                 <td class="px-6 py-4 text-center">
                                                     <form action="{{ route('perjalanan.destroy', $perjalanan->id) }}"
                                                         method="POST"
@@ -322,7 +327,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lokasi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pengguna</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu Unggah</th>
-                                @if(Auth::user()?->admin)
+                                @if (Auth::user()?->admin)
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hapus</th>
                                 @endif
                             </tr>
@@ -359,7 +364,7 @@
                     <td class="px-6 py-4 text-sm text-gray-700">${item.nama_tempat ?? '-'}</td>
                     <td class="px-6 py-4 text-sm text-gray-500">${item.nama_pengguna ?? '-'}</td>
                     <td class="px-6 py-4 text-sm text-gray-500">${formattedDate}</td>
-                    @if(Auth::user()?->admin)
+                    @if (Auth::user()?->admin)
                     <td class="px-6 py-4 text-center">
                         <form action="${deleteUrl}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
                              <input type="hidden" name="_token" value="${csrfToken}">
@@ -417,8 +422,7 @@
             });
         });
 
-        form.addEventListener('submit', e => {
-        });
+        form.addEventListener('submit', e => {});
 
         input.addEventListener('input', function() {
             const query = this.value.trim();
